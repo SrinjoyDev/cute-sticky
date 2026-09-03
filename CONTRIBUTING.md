@@ -23,7 +23,9 @@ npm run tauri dev
 ```
 
 `tauri dev` starts Vite and the Rust shell together, with hot reload for the
-pages. The tab appears on the right edge of your primary monitor.
+pages. The tab appears on the right edge of your primary monitor. Debug builds
+never register themselves to start with Windows; only release builds do.
+Set `CUTE_STICKY_DEVTOOLS=1` to open devtools for each note window in debug.
 
 ### From WSL
 

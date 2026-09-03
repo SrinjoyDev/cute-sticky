@@ -123,7 +123,7 @@ debounce (300 ms) coalesces further.
 ```json
 {
   "version": 1,
-  "settings": { "tabY": 0.36, "tabHidden": false },
+  "settings": { "tabY": 0.36, "tabHidden": false, "autostart": true },
   "notes": [
     {
       "id": "k3v9x2mq1a",
@@ -191,6 +191,9 @@ snapshot the caller emits as `notes-changed`.
 ## Tray
 
 Menu: New note · Show tab / Hide tab · Start with Windows (check) · Quit.
+`settings.autostart` defaults to true; release builds re-register the
+autostart entry on every launch so it always points at the current exe, and
+debug builds never touch it.
 Left click also opens the menu. Quit flushes the store first. A second app
 instance forwards to the first, which shows the tab if hidden.
 

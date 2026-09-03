@@ -1,0 +1,235 @@
+/* The window is the note plus a 16 px transparent margin on every side for the shadow. */
+
+.note {
+  position: absolute;
+  inset: 16px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 42%),
+    var(--paper);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 10px 24px rgba(59, 53, 71, 0.22),
+    0 2px 6px rgba(59, 53, 71, 0.1);
+  transform-origin: top right;
+  transition: background-color 0.25s;
+  animation: note-in 0.26s var(--spring);
+}
+@keyframes note-in {
+  from {
+    transform: scale(0.9) translateY(6px);
+    opacity: 0;
+  }
+}
+@keyframes note-out {
+  to {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+}
+body.closing .note {
+  animation: note-out 0.16s ease-in forwards;
+  pointer-events: none;
+}
+
+/* Header */
+.nh {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 10px;
+  gap: 6px;
+  flex: none;
+}
+.sw {
+  appearance: none;
+  border: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  background: var(--paper);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px rgba(59, 53, 71, 0.15);
+  transition: transform 0.18s var(--spring);
+}
+.sw:hover {
+  transform: scale(1.15);
+}
+.grip {
+  flex: 1;
+  height: 100%;
+  cursor: grab;
+}
+.grip:active {
+  cursor: grabbing;
+}
+.acts {
+  display: flex;
+  gap: 2px;
+}
+
+/* Colour popover */
+.sws {
+  position: absolute;
+  left: 6px;
+  top: 32px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 999px;
+  box-shadow:
+    0 8px 20px rgba(59, 53, 71, 0.2),
+    inset 0 0 0 1px rgba(59, 53, 71, 0.06);
+  transform-origin: top left;
+  transform: scale(0.7);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.18s var(--spring),
+    opacity 0.12s,
+    visibility 0s linear 0.18s;
+}
+.sws.open {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.swo {
+  appearance: none;
+  border: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(59, 53, 71, 0.14);
+  transition: transform 0.15s var(--spring);
+}
+.swo:hover {
+  transform: scale(1.2);
+}
+.swo.on {
+  box-shadow:
+    inset 0 0 0 1px rgba(59, 53, 71, 0.14),
+    0 0 0 2px #fff,
+    0 0 0 3.5px var(--ink);
+}
+
+/* Editor */
+.nb {
+  flex: 1;
+  overflow: auto;
+  padding: 2px 12px 12px;
+  font-size: 15px;
+  line-height: 1.45;
+  cursor: text;
+}
+.nb::-webkit-scrollbar {
+  width: 6px;
+}
+.nb::-webkit-scrollbar-thumb {
+  background: rgba(59, 53, 71, 0.18);
+  border-radius: 3px;
+}
+.blk {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 1px 0;
+}
+.mk {
+  flex: none;
+  width: 18px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+}
+.blk.p .mk {
+  display: none;
+}
+.blk.bullet .mk::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-2);
+}
+.cb {
+  appearance: none;
+  border: 1.5px solid rgba(59, 53, 71, 0.45);
+  background: rgba(255, 255, 255, 0.5);
+  width: 15px;
+  height: 15px;
+  border-radius: 4.5px;
+  cursor: pointer;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s var(--spring);
+}
+.cb:hover {
+  transform: scale(1.1);
+}
+.cb svg {
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.blk.done .cb {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.blk.done .cb svg {
+  opacity: 1;
+}
+.tx {
+  flex: 1;
+  min-width: 0;
+  min-height: 22px;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+  caret-color: var(--ink);
+}
+.blk.done .tx {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+.blk:only-child .tx:empty::before {
+  content: 'Write something…';
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+/* Resize grip: three dots in the corner */
+.rs {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  opacity: 0.7;
+  background:
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 9px / 4px 4px no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 9px / 4px 4px no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 5px / 4px 4px no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 1px 9px / 4px 4px no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 5px / 4px 4px no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 1px / 4px 4px no-repeat;
+}

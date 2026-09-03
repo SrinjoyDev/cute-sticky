@@ -1,0 +1,124 @@
+/* Tokens, font, resets and the controls every page shares. */
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('./fonts/nunito-variable.woff2') format('woff2');
+}
+
+:root {
+  --ink: #3b3547;
+  --ink-2: #6e6880;
+  --ink-3: #9a94a8;
+  --paper: #fbf8f6;
+  --accent: #7b5bcf;
+  --accent-soft: rgba(123, 91, 207, 0.14);
+  --danger: #e2607f;
+  --butter: #ffe9a8;
+  --peach: #ffd3c2;
+  --mint: #cfefdd;
+  --sky: #cde6fa;
+  --lilac: #e3d7f7;
+  --rose: #fbd5e3;
+  --app: 'Nunito', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--app);
+  color: var(--ink);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Icon button used in note headers and on pile cards. */
+.ic {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--ink);
+  opacity: 0.55;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    transform 0.15s var(--spring);
+}
+.ic:hover {
+  opacity: 1;
+  background: rgba(59, 53, 71, 0.1);
+}
+.ic:active {
+  transform: scale(0.92);
+}
+.ic svg {
+  width: 14px;
+  height: 14px;
+}
+.ic.pin.on {
+  opacity: 1;
+  color: var(--accent);
+}
+.ic.pin.on svg {
+  transform: rotate(-12deg);
+}
+
+/* Inline delete confirmation: the trash icon becomes a "Delete?" pill for 3 s. */
+.ic.trash.armed {
+  opacity: 1;
+  width: auto;
+  padding: 0 9px;
+  background: var(--danger);
+  color: #fff;
+  font: 800 11px/1 var(--app);
+  border-radius: 999px;
+}
+.ic.trash.armed svg {
+  display: none;
+}
+.ic.trash.armed::after {
+  content: 'Delete?';
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}

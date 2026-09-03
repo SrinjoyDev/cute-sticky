@@ -1,0 +1,68 @@
+/* The tab fills its 30 px-wide window: 22 px of strip, 8 px of shadow room on the left. */
+
+.tab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 22px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: rgba(251, 248, 246, 0.96);
+  border-radius: 11px 0 0 11px;
+  box-shadow:
+    -2px 2px 10px rgba(59, 53, 71, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: transform 0.2s var(--spring);
+}
+.tab:hover {
+  transform: translateX(-2px);
+}
+.tab.dragging {
+  cursor: grabbing;
+}
+
+.dot {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(59, 53, 71, 0.14);
+  transition: transform 0.2s var(--spring);
+  animation: dot-in 0.3s var(--spring);
+}
+@keyframes dot-in {
+  from {
+    transform: scale(0);
+  }
+}
+.tab:hover .dot {
+  transform: scale(1.18);
+}
+.tab .dot:hover {
+  transform: scale(1.45);
+}
+.dot.on::after {
+  content: '';
+  position: absolute;
+  inset: 2.5px;
+  border-radius: 50%;
+  background: #fff;
+}
+.dot.empty {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+}
+.more {
+  font: 800 9px/1 var(--app);
+  color: var(--ink-2);
+}

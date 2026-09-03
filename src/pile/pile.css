@@ -1,0 +1,182 @@
+/* Window: 170 px cards + 18 px peek room on the left + 4 px on the right. */
+
+:root {
+  --card-w: 170px;
+  --card-h: 110px;
+  --peek: 18px;
+}
+
+.pile {
+  position: absolute;
+  inset: 0;
+}
+
+.fc {
+  position: absolute;
+  right: 4px;
+  top: var(--t);
+  width: var(--card-w);
+  height: var(--card-h);
+  z-index: var(--z);
+  border-radius: 10px;
+  padding: 8px 10px 8px 11px;
+  cursor: pointer;
+  overflow: hidden;
+  color: var(--ink);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 45%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 -1px 0 rgba(59, 53, 71, 0.04),
+    0 8px 22px rgba(59, 53, 71, 0.18),
+    0 1px 3px rgba(59, 53, 71, 0.1);
+  transform: rotate(var(--rot));
+  opacity: 1;
+  transition:
+    top 0.32s var(--spring),
+    transform 0.26s var(--spring),
+    opacity 0.18s ease,
+    box-shadow 0.2s,
+    background-color 0.25s;
+}
+
+/* Peek: slide out to the left, straighten, and come to the top. */
+.fc:hover,
+.fc:focus-visible {
+  transform: translateX(calc(-1 * var(--peek))) rotate(0deg) scale(1.03);
+  z-index: 100;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 18px 34px rgba(59, 53, 71, 0.26),
+    0 2px 6px rgba(59, 53, 71, 0.12);
+  transition-delay: 0s;
+}
+/* Everything below a peeked card makes room for it. */
+.fc:hover ~ .fc {
+  transform: translateY(var(--push)) rotate(var(--rot));
+  transition-delay: 0s;
+}
+.fc:hover ~ .ghost {
+  transform: translateY(var(--push));
+  transition-delay: 0s;
+}
+
+/* Stacked: where cards sit before dealing and after folding. */
+.pile.stack .fc {
+  top: var(--t0);
+  opacity: 0;
+  transform: translateX(26px) rotate(0deg) scale(0.92);
+}
+
+.fc-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+  padding-right: 22px;
+}
+.fc-l1 {
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-l1.mute {
+  color: var(--ink-3);
+  font-weight: 600;
+  font-style: italic;
+}
+.fc-ln {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fc-foot {
+  position: absolute;
+  left: 11px;
+  right: 10px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ago {
+  font: 700 10px/1 var(--app);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.openmark {
+  flex: none;
+  display: none;
+  font: 800 9px/1 var(--app);
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.65);
+  padding: 3px 6px;
+  border-radius: 999px;
+}
+.fc.is-open .openmark {
+  display: inline-block;
+}
+.fc .del {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 22px;
+  height: 22px;
+  opacity: 0;
+}
+.fc:hover .del,
+.fc .del.armed,
+.fc .del:focus-visible {
+  opacity: 0.75;
+}
+.fc .del:hover {
+  opacity: 1;
+}
+
+.ghost {
+  position: absolute;
+  right: 4px;
+  top: var(--t);
+  width: var(--card-w);
+  height: 34px;
+  z-index: 0;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(59, 53, 71, 0.32);
+  background: rgba(251, 248, 246, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ink-2);
+  cursor: pointer;
+  font: 800 12px/1 var(--app);
+  transition:
+    top 0.32s var(--spring),
+    transform 0.26s var(--spring),
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s,
+    opacity 0.18s ease;
+}
+.ghost svg {
+  width: 14px;
+  height: 14px;
+}
+.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(227, 215, 247, 0.9);
+}
+.pile.stack .ghost {
+  top: var(--t0);
+  opacity: 0;
+  transform: translateX(26px) scale(0.92);
+}

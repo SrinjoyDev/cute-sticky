@@ -161,7 +161,7 @@ pub fn show_pile(app: &AppHandle) {
     }
 }
 
-#[derive(serde::Serialize)]
+#[derive(Clone, serde::Serialize)]
 struct PileOpen<'a> {
     data: &'a Data,
     layout: &'a PileLayout,

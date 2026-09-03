@@ -46,7 +46,7 @@ converts with the monitor scale factor.
   notes show a white core. More than 8 notes shows the first 8 plus a `+n`.
   No notes shows one hollow dot.
 - Always on top, never focused on show (`focusable: false`).
-- Hover 150 ms → ask Rust to show the pile. Click a dot → open that note.
+- Hover → tell Rust; it waits 150 ms of intent before showing the pile. Click a dot → open that note.
   Press and drag vertically → the tab follows the cursor; release saves
   `tabY`.
 
@@ -69,7 +69,7 @@ converts with the monitor scale factor.
 - Trash icon → inline confirm. First click turns it into a "Delete?" pill for
   3 s; second click deletes. Same control lives in note windows.
 - The pile hides 250 ms after the cursor leaves both the tab and the pile.
-  Rust owns this state machine (`hover.rs`) with a 500 ms cursor-position
+  Rust owns this state machine (`hover.rs`) with a 400 ms cursor-position
   safety check so the pile can't get stuck open.
 
 ### `note-<id>`
@@ -100,8 +100,8 @@ plain line
 ```
 
 `src/shared/model.ts` is the pure core: `parse(text) → Block[]`,
-`serialize(blocks) → text`, and edit operations (`splitAt`, `mergeWithPrevious`,
-`applyShortcut`, `exitList`). The DOM layer renders one row per block with a
+`serialize(blocks) → text`, and edit operations (`splitAt`, `backspaceAtStart`,
+`applyShortcut`, `toggleDone`). The DOM layer renders one row per block with a
 marker (none, dot, or checkbox) and a `contenteditable="plaintext-only"` text
 span, and maps keys to model operations:
 
@@ -162,8 +162,7 @@ Commands (frontend → Rust):
 | `set_note_pinned` | id, pinned                           | toggle always-on-top                            |
 | `hover`           | source (`tab`/`pile`), inside (bool) | feed the hover machine                          |
 | `pile_hidden`     |                                      | pile finished its fold animation                |
-| `tab_drag`        | dy                                   | move the tab, persist `tabY` on release         |
-| `start_resize`    |                                      | begin a native south-east resize drag           |
+| `tab_drag`        | top (logical px), done (bool)        | move the tab; persist `tabY` when done          |
 
 Events (Rust → windows):
 

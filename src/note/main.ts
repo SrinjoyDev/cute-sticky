@@ -1,21 +1,22 @@
 /**
  * A floating note window. The window label is `note-<id>`; the page loads the
- * note, renders the header and editor, and saves as you type.
+ * note, renders the chrome and editor, and saves as you type.
  */
 
 import '../shared/theme.css';
 import './note.css';
 
+import { LogicalSize } from '@tauri-apps/api/dpi';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
-import { COLORS, colorHex } from '../shared/colors';
-import { $$, debounce, installPageDefaults, reportError } from '../shared/dom';
-import { ICON } from '../shared/icons';
+import { debounce, installPageDefaults, reportError } from '../shared/dom';
 import { ipc, onNotesChanged } from '../shared/ipc';
 import { parse, serialize, type Block } from '../shared/model';
-import type { Color, Note } from '../shared/types';
+import { shapeById, shapeDefsSVG } from '../shared/shapes';
+import type { Color, Shape } from '../shared/types';
+import { createBar } from './bar';
 import { createEditor } from './editor';
-import { createToolbar } from './toolbar';
+import { applyColor, applyPin, applyShape, createNoteShell } from './shell';
 
 const SAVE_MS = 150;
 const CLOSE_MS = 160;
@@ -26,24 +27,17 @@ installPageDefaults();
 const win = getCurrentWindow();
 const id = win.label.replace(/^note-/, '');
 
-function headerHTML(note: Note): string {
-  const swatches = COLORS.map(
-    (c) =>
-      `<button class="swo${c.id === note.color ? ' on' : ''}" data-color="${c.id}" style="background:${c.hex}" title="${c.name}" aria-label="${c.name}"></button>`,
-  ).join('');
-  return `
-    <div class="nh">
-      <button class="sw" title="Colour" aria-label="Change colour"></button>
-      <div class="grip"></div>
-      <div class="acts">
-        <button class="ic pin${note.pinned ? ' on' : ''}" title="${note.pinned ? 'Pinned on top' : 'Pin on top'}">${ICON.pin}</button>
-        <button class="ic trash" title="Delete">${ICON.trash}</button>
-        <button class="ic close" title="Close">${ICON.close}</button>
-      </div>
-    </div>
-    <div class="nb"></div>
-    <div class="rs" title="Resize"></div>
-    <div class="sws">${swatches}</div>`;
+/** Grows the window when a shape's safe area would otherwise be too small to write in. */
+async function ensureSize(shape: Shape): Promise<void> {
+  const [minW, minH] = shapeById(shape).minWindow;
+  const w = document.documentElement.clientWidth;
+  const h = document.documentElement.clientHeight;
+  if (w >= minW && h >= minH) return;
+  try {
+    await win.setSize(new LogicalSize(Math.max(w, minW), Math.max(h, minH)));
+  } catch (err) {
+    reportError(`resize failed: ${String(err)}`);
+  }
 }
 
 async function main(): Promise<void> {
@@ -53,18 +47,18 @@ async function main(): Promise<void> {
     return;
   }
 
-  const el = document.createElement('div');
-  el.className = 'note';
-  el.style.setProperty('--paper', colorHex(note.color));
-  el.innerHTML = headerHTML(note);
+  document.body.insertAdjacentHTML('afterbegin', shapeDefsSVG());
+  const el = createNoteShell({ color: note.color, shape: note.shape, pinned: note.pinned });
   document.body.appendChild(el);
 
+  const inner = el.querySelector<HTMLElement>('.inner')!;
   const body = el.querySelector<HTMLElement>('.nb')!;
-  const pin = el.querySelector<HTMLElement>('.pin')!;
   const trash = el.querySelector<HTMLElement>('.trash')!;
   const swatches = el.querySelector<HTMLElement>('.sws')!;
+  const shapes = el.querySelector<HTMLElement>('.shp')!;
   let pinned = note.pinned;
   let color: Color = note.color;
+  let shape: Shape = note.shape;
   let closing = false;
 
   const save = debounce((blocks: Block[]) => {
@@ -73,25 +67,40 @@ async function main(): Promise<void> {
       .catch((err) => reportError(`save failed: ${String(err)}`));
   }, SAVE_MS);
   const editor = createEditor(body, parse(note.content), save);
-  createToolbar(el, body, editor);
+  createBar(inner, body, editor);
 
-  // Header: drag, colour, pin, delete, close.
+  // Header: drag, colour, shape, pin, delete, close.
   el.querySelector<HTMLElement>('.grip')!.addEventListener('mousedown', (ev) => {
     if (ev.button === 0) void win.startDragging();
   });
   el.querySelector<HTMLElement>('.sw')!.addEventListener('click', () => {
+    shapes.classList.remove('open');
     swatches.classList.toggle('open');
+  });
+  el.querySelector<HTMLElement>('.shape')!.addEventListener('click', () => {
+    swatches.classList.remove('open');
+    shapes.classList.toggle('open');
   });
   swatches.addEventListener('click', (ev) => {
     const swo = (ev.target as HTMLElement).closest<HTMLElement>('.swo');
     if (!swo?.dataset.color) return;
-    setColor(swo.dataset.color as Color);
+    color = swo.dataset.color as Color;
+    applyColor(el, color);
     void ipc.updateNote(id, { color });
     swatches.classList.remove('open');
   });
-  pin.addEventListener('click', () => {
+  shapes.addEventListener('click', (ev) => {
+    const sho = (ev.target as HTMLElement).closest<HTMLElement>('.sho');
+    if (!sho?.dataset.shape) return;
+    shape = sho.dataset.shape as Shape;
+    applyShape(el, shape);
+    void ensureSize(shape);
+    void ipc.updateNote(id, { shape });
+    shapes.classList.remove('open');
+  });
+  el.querySelector<HTMLElement>('.pin')!.addEventListener('click', () => {
     pinned = !pinned;
-    applyPin();
+    applyPin(el, pinned);
     void ipc.setNotePinned(id, pinned);
   });
 
@@ -135,31 +144,29 @@ async function main(): Promise<void> {
   document.addEventListener('pointerdown', (ev) => {
     const t = ev.target as HTMLElement;
     if (!t.closest('.sws, .sw')) swatches.classList.remove('open');
+    if (!t.closest('.shp, .shape')) shapes.classList.remove('open');
     if (!t.closest('.trash')) disarm();
   });
 
-  function setColor(next: Color): void {
-    color = next;
-    el.style.setProperty('--paper', colorHex(next));
-    for (const s of $$('.swo', swatches)) s.classList.toggle('on', s.dataset.color === next);
-  }
-  function applyPin(): void {
-    pin.classList.toggle('on', pinned);
-    pin.title = pinned ? 'Pinned on top' : 'Pin on top';
-  }
-
-  // Changes made elsewhere (colour from another window, pin state) show up here.
+  // Changes made elsewhere (another window, the pile) show up here.
   void onNotesChanged((data) => {
     const mine = data.notes.find((n) => n.id === id);
     if (!mine) return;
-    if (mine.color !== color) setColor(mine.color);
+    if (mine.color !== color) {
+      color = mine.color;
+      applyColor(el, color);
+    }
+    if (mine.shape !== shape) {
+      shape = mine.shape;
+      applyShape(el, shape);
+    }
     if (mine.pinned !== pinned) {
       pinned = mine.pinned;
-      applyPin();
+      applyPin(el, pinned);
     }
   });
 
   editor.focusEnd();
 }
 
-main().catch((err) => console.error('note failed to start', err));
+main().catch((err) => reportError(`note failed to start: ${String(err)}`));

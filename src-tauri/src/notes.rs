@@ -6,7 +6,7 @@
 
 use tauri::{AppHandle, Manager, State};
 
-use crate::store::{now_ms, Data, Note, COLORS};
+use crate::store::{now_ms, Data, Note, COLORS, SHAPES};
 use crate::{emit_changed, hover, windows, AppState};
 
 #[tauri::command]
@@ -36,10 +36,16 @@ pub fn update_note(
     id: String,
     content: Option<String>,
     color: Option<String>,
+    shape: Option<String>,
 ) -> Result<(), String> {
     if let Some(c) = &color {
         if !COLORS.contains(&c.as_str()) {
             return Err(format!("unknown colour {c}"));
+        }
+    }
+    if let Some(sh) = &shape {
+        if !SHAPES.contains(&sh.as_str()) {
+            return Err(format!("unknown shape {sh}"));
         }
     }
     {
@@ -50,6 +56,9 @@ pub fn update_note(
         }
         if let Some(color) = color {
             note.color = color;
+        }
+        if let Some(shape) = shape {
+            note.shape = shape;
         }
         note.updated_at = now_ms();
     }

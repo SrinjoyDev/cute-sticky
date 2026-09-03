@@ -2,6 +2,8 @@
 
 export type Color = 'butter' | 'peach' | 'mint' | 'sky' | 'lilac' | 'rose';
 
+export type Shape = 'square' | 'circle' | 'cloud' | 'heart' | 'bubble';
+
 /** Content rectangle of a note window in logical pixels, shadow margin excluded. */
 export interface WindowRect {
   x: number;
@@ -13,6 +15,7 @@ export interface WindowRect {
 export interface Note {
   id: string;
   color: Color;
+  shape: Shape;
   content: string;
   pinned: boolean;
   open: boolean;

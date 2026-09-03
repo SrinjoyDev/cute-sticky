@@ -1,19 +1,20 @@
-/* The window is the note plus a 16 px transparent margin on every side for the shadow. */
+/*
+ * A note window is the note plus a 16 px transparent margin on every side for
+ * the shadow. Inside, `.paper` is clipped to the note's shape and `.inner`
+ * holds the header, editor and toolbar within the shape's safe area.
+ */
 
 .note {
   position: absolute;
   inset: 16px;
-  display: flex;
-  flex-direction: column;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 42%), var(--paper);
-  border-radius: 14px;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
-    0 10px 24px rgba(59, 53, 71, 0.22),
-    0 2px 6px rgba(59, 53, 71, 0.1);
+  container-type: size;
+  --safe-top: 0px;
+  --safe-right: 0px;
+  --safe-bottom: 0px;
+  --safe-left: 0px;
+  filter: drop-shadow(0 8px 10px rgba(59, 53, 71, 0.22))
+    drop-shadow(0 1px 3px rgba(59, 53, 71, 0.14));
   transform-origin: top right;
-  transition: background-color 0.25s;
   animation: note-in 0.26s var(--spring);
 }
 @keyframes note-in {
@@ -33,13 +34,70 @@ body.closing .note {
   pointer-events: none;
 }
 
+.paper {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 42%), var(--paper);
+  clip-path: inset(0 round 14px);
+  transition: background-color 0.25s;
+}
+.inner {
+  position: absolute;
+  top: var(--safe-top);
+  right: var(--safe-right);
+  bottom: var(--safe-bottom);
+  left: var(--safe-left);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Shapes: the paper's clip and the safe area the content keeps to. */
+.shape-circle {
+  --safe-top: 13cqh;
+  --safe-right: 15cqw;
+  --safe-bottom: 12cqh;
+  --safe-left: 15cqw;
+}
+.shape-circle .paper {
+  clip-path: ellipse(50% 50% at 50% 50%);
+}
+.shape-cloud {
+  --safe-top: 19cqh;
+  --safe-right: 11cqw;
+  --safe-bottom: 11cqh;
+  --safe-left: 11cqw;
+}
+.shape-cloud .paper {
+  clip-path: url(#clip-cloud);
+}
+.shape-heart {
+  --safe-top: 20cqh;
+  --safe-right: 17cqw;
+  --safe-bottom: 31cqh;
+  --safe-left: 17cqw;
+}
+.shape-heart .paper {
+  clip-path: url(#clip-heart);
+}
+.shape-bubble {
+  --safe-top: 2cqh;
+  --safe-right: 3cqw;
+  --safe-bottom: 22cqh;
+  --safe-left: 3cqw;
+}
+.shape-bubble .paper {
+  clip-path: url(#clip-bubble);
+}
+
 /* Header */
 .nh {
   height: 34px;
   display: flex;
   align-items: center;
   padding: 0 6px 0 10px;
-  gap: 6px;
+  gap: 4px;
   flex: none;
 }
 .sw {
@@ -47,6 +105,7 @@ body.closing .note {
   border: 0;
   width: 14px;
   height: 14px;
+  margin-right: 4px;
   border-radius: 50%;
   padding: 0;
   cursor: pointer;
@@ -72,12 +131,13 @@ body.closing .note {
   gap: 2px;
 }
 
-/* Colour popover */
-.sws {
+/* Popovers: colour swatches and shape thumbnails, anchored under the header. */
+.sws,
+.shp {
   position: absolute;
-  left: 6px;
-  top: 32px;
-  z-index: 2;
+  left: calc(var(--safe-left) + 6px);
+  top: calc(var(--safe-top) + 32px);
+  z-index: 3;
   display: flex;
   gap: 6px;
   padding: 6px;
@@ -95,7 +155,8 @@ body.closing .note {
     opacity 0.12s,
     visibility 0s linear 0.18s;
 }
-.sws.open {
+.sws.open,
+.shp.open {
   transform: none;
   opacity: 1;
   visibility: visible;
@@ -121,15 +182,45 @@ body.closing .note {
     0 0 0 2px #fff,
     0 0 0 3.5px var(--ink);
 }
+.sho {
+  appearance: none;
+  border: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 7px;
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+  transition:
+    transform 0.15s var(--spring),
+    background 0.12s;
+}
+.sho .paper {
+  inset: 3px;
+  background: var(--paper);
+}
+.sho:hover {
+  transform: scale(1.12);
+  background: rgba(59, 53, 71, 0.08);
+}
+.sho.on {
+  background: rgba(59, 53, 71, 0.16);
+}
 
 /* Editor */
 .nb {
   flex: 1;
+  min-height: 0;
   overflow: auto;
-  padding: 2px 12px 12px;
+  padding: 2px 12px 4px;
   font-size: 15px;
   line-height: 1.45;
   cursor: text;
+}
+.nb:focus,
+.nb:focus-visible {
+  outline: none;
 }
 .nb::-webkit-scrollbar {
   width: 6px;
@@ -151,6 +242,8 @@ body.closing .note {
   display: grid;
   place-items: center;
   color: var(--ink-2);
+  user-select: none;
+  -webkit-user-select: none;
 }
 .blk.p .mk {
   display: none;
@@ -215,30 +308,6 @@ body.closing .note {
   pointer-events: none;
 }
 
-/* Resize grip: three dots in the corner */
-.rs {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  width: 16px;
-  height: 16px;
-  cursor: nwse-resize;
-  opacity: 0.7;
-  background:
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 9px / 4px 4px
-      no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 9px / 4px 4px
-      no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 5px / 4px 4px
-      no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 1px 9px / 4px 4px
-      no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 5px / 4px 4px
-      no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 1px / 4px 4px
-      no-repeat;
-}
-
 /* Inline formatting */
 .tx b {
   font-weight: 800;
@@ -253,62 +322,93 @@ body.closing .note {
 .tx s {
   text-decoration: line-through;
 }
-.blk.done .tx s,
-.blk.done .tx u {
-  text-decoration: line-through;
-}
 
-/* Selection toolbar: a small pill just above whatever is selected */
-.fmt {
-  position: absolute;
-  z-index: 3;
+/* Bottom toolbar: lists and text styles, shown while the note is hovered or focused. */
+.bar {
+  flex: none;
   display: flex;
+  align-items: center;
   gap: 2px;
-  padding: 4px;
-  background: #2b2636;
-  border-radius: 999px;
-  box-shadow: 0 8px 20px rgba(59, 53, 71, 0.32);
-  transform: translateY(4px) scale(0.9);
+  padding: 3px 6px 4px;
   opacity: 0;
-  visibility: hidden;
+  transform: translateY(4px);
   transition:
-    transform 0.16s var(--spring),
-    opacity 0.12s,
-    visibility 0s linear 0.16s;
+    opacity 0.15s,
+    transform 0.15s var(--spring);
 }
-.fmt.on {
-  transform: none;
+.note:hover .bar,
+.note:focus-within .bar {
   opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
+  transform: none;
 }
-.fmt button {
+.bb {
   appearance: none;
   border: 0;
   background: transparent;
-  color: #fff;
   width: 26px;
-  height: 26px;
+  height: 24px;
   padding: 0;
-  border-radius: 999px;
-  font: 800 13px/1 var(--app);
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  transition: background 0.12s;
+  color: var(--ink);
+  opacity: 0.6;
+  font: 800 12px/1 var(--app);
+  transition:
+    opacity 0.12s,
+    background 0.12s;
 }
-.fmt button:hover {
-  background: rgba(255, 255, 255, 0.14);
+.bb svg {
+  width: 15px;
+  height: 15px;
 }
-.fmt button.on {
-  background: rgba(255, 255, 255, 0.26);
+.bb:hover {
+  opacity: 1;
+  background: rgba(59, 53, 71, 0.1);
 }
-.fmt .i {
+.bb.on {
+  opacity: 1;
+  background: rgba(59, 53, 71, 0.16);
+}
+.bb.i {
   font-style: italic;
-  font-weight: 700;
 }
-.fmt .u {
+.bb.u {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.fmt .s {
+.bb.s {
   text-decoration: line-through;
+}
+.sep {
+  width: 1px;
+  height: 14px;
+  margin: 0 4px;
+  background: rgba(59, 53, 71, 0.18);
+}
+
+/* Resize grip: three dots in the corner of the safe area */
+.rs {
+  position: absolute;
+  right: calc(var(--safe-right) + 3px);
+  bottom: calc(var(--safe-bottom) + 3px);
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  opacity: 0.7;
+  z-index: 2;
+  background:
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 9px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 9px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 5px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 1px 9px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 5px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 1px / 4px 4px
+      no-repeat;
 }

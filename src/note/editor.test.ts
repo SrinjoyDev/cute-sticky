@@ -98,4 +98,27 @@ describe('editor DOM layer', () => {
     expect(onChange).toHaveBeenLastCalledWith([p('')]);
     expect(root.children).toHaveLength(1);
   });
+
+  it('toggleList turns the caret line into a checklist item and back', () => {
+    const { root, editor, onChange } = mount([p('a'), p('b')]);
+    placeCaret(textOf(root, 1).firstChild!, 1);
+    editor.toggleList('check');
+    expect(onChange).toHaveBeenLastCalledWith([p('a'), { type: 'check', text: 'b', done: false }]);
+    expect(root.children[1].className).toBe('blk check');
+    expect(editor.selectionTypes()).toEqual(['check']);
+    editor.toggleList('check');
+    expect(onChange).toHaveBeenLastCalledWith([p('a'), p('b')]);
+  });
+
+  it('toggleList covers every line in a selection', () => {
+    const { root, editor, onChange } = mount([p('a'), p('b'), p('c')]);
+    const range = document.createRange();
+    range.setStart(textOf(root, 0).firstChild!, 0);
+    range.setEnd(textOf(root, 2).firstChild!, 1);
+    const sel = getSelection()!;
+    sel.removeAllRanges();
+    sel.addRange(range);
+    editor.toggleList('bullet');
+    expect(onChange).toHaveBeenLastCalledWith([b('a'), b('b'), b('c')]);
+  });
 });

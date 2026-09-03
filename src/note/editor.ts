@@ -40,7 +40,13 @@ export interface Editor {
   focusEnd(): void;
   /** Toggles an inline style on the current selection. */
   format(command: FormatCommand): void;
+  /** Makes the current line (or every line in the selection) a bullet or checklist item, or plain again. */
+  toggleList(type: ListType): void;
+  /** Types of the blocks the selection touches, for toolbar state. */
+  selectionTypes(): BlockType[];
 }
+
+export type ListType = 'bullet' | 'check';
 
 interface Caret {
   block: number;
@@ -390,6 +396,37 @@ export function createEditor(
     commit();
   });
 
+  function selectedBlockRange(): [number, number] | null {
+    const sel = getSelection();
+    if (!sel?.anchorNode || !sel.focusNode) return null;
+    if (!root.contains(sel.anchorNode) || !root.contains(sel.focusNode)) return null;
+    const a = blockIndexOf(sel.anchorNode);
+    const f = blockIndexOf(sel.focusNode);
+    if (a < 0 || f < 0) return null;
+    return [Math.min(a, f), Math.max(a, f)];
+  }
+
+  function toggleList(type: ListType): void {
+    const range = selectedBlockRange();
+    if (!range) return;
+    const c = caret();
+    const [lo, hi] = range;
+    const allAlready = blocks.slice(lo, hi + 1).every((b) => b.type === type);
+    const next = blocks.map((b, i) => {
+      if (i < lo || i > hi) return b;
+      return allAlready
+        ? { ...b, type: 'p' as BlockType, done: false }
+        : { ...b, type, done: false };
+    });
+    apply(next, c?.block ?? lo, c?.offset ?? 0);
+  }
+
+  function selectionTypes(): BlockType[] {
+    const range = selectedBlockRange();
+    if (!range) return [];
+    return blocks.slice(range[0], range[1] + 1).map((b) => b.type);
+  }
+
   function format(command: FormatCommand): void {
     root.focus({ preventScroll: true });
     document.execCommand(command, false);
@@ -406,5 +443,7 @@ export function createEditor(
     focusStart: () => setCaret(0, 0),
     focusEnd: () => setCaret(blocks.length - 1, plainLength(blocks[blocks.length - 1])),
     format,
+    toggleList,
+    selectionTypes,
   };
 }

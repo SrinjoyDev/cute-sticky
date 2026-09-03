@@ -2,14 +2,19 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import type { Color, Data, Note, PileOpen } from './types';
+import type { Color, Data, Note, PileOpen, Shape } from './types';
 
 export const ipc = {
   listNotes: () => invoke<Data>('list_notes'),
   getNote: (id: string) => invoke<Note | null>('get_note', { id }),
   createNote: () => invoke<Note>('create_note'),
-  updateNote: (id: string, patch: { content?: string; color?: Color }) =>
-    invoke<void>('update_note', { id, content: patch.content ?? null, color: patch.color ?? null }),
+  updateNote: (id: string, patch: { content?: string; color?: Color; shape?: Shape }) =>
+    invoke<void>('update_note', {
+      id,
+      content: patch.content ?? null,
+      color: patch.color ?? null,
+      shape: patch.shape ?? null,
+    }),
   deleteNote: (id: string) => invoke<void>('delete_note', { id }),
   openNote: (id: string) => invoke<void>('open_note', { id }),
   closeNote: (id: string) => invoke<void>('close_note', { id }),

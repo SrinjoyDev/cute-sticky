@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub const COLORS: [&str; 6] = ["butter", "peach", "mint", "sky", "lilac", "rose"];
+pub const SHAPES: [&str; 5] = ["square", "circle", "cloud", "heart", "bubble"];
 pub const DEFAULT_NOTE_W: f64 = 270.0;
 pub const DEFAULT_NOTE_H: f64 = 230.0;
 
@@ -24,6 +25,9 @@ pub struct WindowRect {
 pub struct Note {
     pub id: String,
     pub color: String,
+    /// One of `SHAPES`; files written before shapes existed load as "square".
+    #[serde(default = "default_shape")]
+    pub shape: String,
     pub content: String,
     pub pinned: bool,
     pub open: bool,
@@ -133,6 +137,7 @@ impl Store {
         let note = Note {
             id: new_id(),
             color: next_color(&self.data.notes).to_string(),
+            shape: "square".to_string(),
             content: String::new(),
             pinned: true,
             open: true,
@@ -190,6 +195,10 @@ pub fn next_color(notes: &[Note]) -> &'static str {
         Some(i) => COLORS[(i + 1) % COLORS.len()],
         None => COLORS[0],
     }
+}
+
+fn default_shape() -> String {
+    "square".to_string()
 }
 
 fn quarantine(path: &Path) {
@@ -318,6 +327,19 @@ mod tests {
         assert_eq!(store.data().settings.tab_y, 0.5);
         assert!(store.data().settings.autostart);
         assert!(!store.data().settings.tab_hidden);
+    }
+
+    #[test]
+    fn notes_without_a_shape_load_as_square() {
+        let path = temp_path();
+        fs::write(
+            &path,
+            r#"{"version":1,"settings":{},"notes":[{"id":"a","color":"mint","content":"x","pinned":true,"open":false,"window":null,"createdAt":1,"updatedAt":1}]}"#,
+        )
+        .unwrap();
+        let mut store = Store::load(path);
+        assert_eq!(store.notes()[0].shape, "square");
+        assert_eq!(store.create_note().shape, "square");
     }
 
     #[test]

@@ -60,7 +60,7 @@ body.closing .note {
   --safe-bottom: 12cqh;
   --safe-left: 15cqw;
 }
-.shape-circle .paper {
+.shape-circle > .paper {
   clip-path: ellipse(50% 50% at 50% 50%);
 }
 .shape-cloud {
@@ -69,7 +69,7 @@ body.closing .note {
   --safe-bottom: 11cqh;
   --safe-left: 21cqw;
 }
-.shape-cloud .paper {
+.shape-cloud > .paper {
   clip-path: url(#clip-cloud);
 }
 .shape-heart {
@@ -78,7 +78,7 @@ body.closing .note {
   --safe-bottom: 31cqh;
   --safe-left: 17cqw;
 }
-.shape-heart .paper {
+.shape-heart > .paper {
   clip-path: url(#clip-heart);
 }
 .shape-bubble {
@@ -87,7 +87,7 @@ body.closing .note {
   --safe-bottom: 22cqh;
   --safe-left: 3cqw;
 }
-.shape-bubble .paper {
+.shape-bubble > .paper {
   clip-path: url(#clip-bubble);
 }
 

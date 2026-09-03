@@ -1,6 +1,6 @@
 {
   "name": "cute-sticky",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A tiny always-on-top sticky notes dock for Windows",
   "type": "module",

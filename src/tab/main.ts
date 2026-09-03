@@ -19,7 +19,6 @@ installPageDefaults();
 
 const tab = document.createElement('div');
 tab.className = 'tab';
-tab.title = 'Stickies';
 document.body.appendChild(tab);
 
 function render(data: Data): void {
@@ -35,8 +34,7 @@ function render(data: Data): void {
     dot.className = note.open ? 'dot on' : 'dot';
     dot.style.background = colorHex(note.color);
     dot.dataset.id = note.id;
-    dot.title = firstLine(note.content);
-    dot.setAttribute('aria-label', dot.title);
+    dot.setAttribute('aria-label', firstLine(note.content));
     dot.tabIndex = -1;
     tab.appendChild(dot);
   }

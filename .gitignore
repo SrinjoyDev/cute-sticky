@@ -19,3 +19,6 @@ src-tauri/gen/schemas/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# raw desktop captures used to produce the README crops
+docs/screenshots/raw-*.png

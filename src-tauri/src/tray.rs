@@ -44,10 +44,13 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "new" => {
-                let state = app.state::<AppState>();
-                if let Err(err) = notes::create_note(app.clone(), state) {
-                    log::error!("new note from tray failed: {err}");
-                }
+                let app = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    let state = app.state::<AppState>();
+                    if let Err(err) = notes::create_note(app.clone(), state).await {
+                        log::error!("new note from tray failed: {err}");
+                    }
+                });
             }
             "tab" => {
                 let hidden = app

@@ -9,10 +9,70 @@ use tauri::{
 
 use crate::geometry::{
     default_note_rect, intersects, note_window_rect, pile_layout, pile_rect, tab_rect, PileLayout, Rect,
-    CARD_W, NOTE_MARGIN, PEEK, PILE_PAD,
+    CARD_W, GHOST_H, NOTE_MARGIN, PEEK, PILE_PAD, TAB_MIN_H, TAB_WINDOW_W,
 };
 use crate::store::{Data, Note, DEFAULT_NOTE_H, DEFAULT_NOTE_W};
 use crate::AppState;
+
+/// Windows widens any window that carries caption styles to a system minimum of
+/// about 132 logical pixels, which would push the 30 px tab off screen. Tao keeps
+/// those styles even for undecorated windows, so the tab and pile are turned into
+/// plain popup windows after creation and again before every resize.
+#[cfg(windows)]
+mod win32 {
+    use std::ffi::c_void;
+
+    type HWND = *mut c_void;
+    const GWL_STYLE: i32 = -16;
+    const WS_POPUP: isize = 0x8000_0000;
+    const WS_CAPTION: isize = 0x00C0_0000;
+    const WS_SYSMENU: isize = 0x0008_0000;
+    const WS_MINIMIZEBOX: isize = 0x0002_0000;
+    const WS_MAXIMIZEBOX: isize = 0x0001_0000;
+    const SWP_NOSIZE: u32 = 0x0001;
+    const SWP_NOMOVE: u32 = 0x0002;
+    const SWP_NOZORDER: u32 = 0x0004;
+    const SWP_NOACTIVATE: u32 = 0x0010;
+    const SWP_FRAMECHANGED: u32 = 0x0020;
+
+    #[link(name = "user32")]
+    extern "system" {
+        fn GetWindowLongPtrW(hwnd: HWND, index: i32) -> isize;
+        fn SetWindowLongPtrW(hwnd: HWND, index: i32, value: isize) -> isize;
+        fn SetWindowPos(hwnd: HWND, after: HWND, x: i32, y: i32, cx: i32, cy: i32, flags: u32) -> i32;
+    }
+
+    pub fn make_popup(window: &tauri::WebviewWindow) {
+        let Ok(hwnd) = window.hwnd() else {
+            return;
+        };
+        let hwnd = hwnd.0 as isize as HWND;
+        // SAFETY: plain user32 calls on a window handle owned by this process.
+        unsafe {
+            let style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+            let wanted = (style & !(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX)) | WS_POPUP;
+            if wanted != style {
+                SetWindowLongPtrW(hwnd, GWL_STYLE, wanted);
+                SetWindowPos(
+                    hwnd,
+                    std::ptr::null_mut(),
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED,
+                );
+            }
+        }
+    }
+}
+
+fn make_popup(window: &tauri::WebviewWindow) {
+    #[cfg(windows)]
+    win32::make_popup(window);
+    #[cfg(not(windows))]
+    let _ = window;
+}
 
 pub const TAB: &str = "tab";
 pub const PILE: &str = "pile";
@@ -64,6 +124,9 @@ fn window_rect(app: &AppHandle, label: &str) -> Option<Rect> {
 
 fn set_rect(app: &AppHandle, label: &str, r: &Rect) {
     if let Some(w) = app.get_webview_window(label) {
+        if label == TAB || label == PILE {
+            make_popup(&w);
+        }
         let _ = w.set_size(Size::Logical(LogicalSize::new(r.w, r.h)));
         let _ = w.set_position(Position::Logical(LogicalPosition::new(r.x, r.y)));
     }
@@ -93,9 +156,12 @@ pub fn create_tab(app: &AppHandle) -> tauri::Result<()> {
         .focusable(false)
         .focused(false)
         .visible(!hidden)
+        // Windows widens caption-style windows to ~132 px unless a minimum is declared.
+        .min_inner_size(TAB_WINDOW_W, TAB_MIN_H)
         .position(r.x, r.y)
         .inner_size(r.w, r.h)
         .build()?;
+    set_rect(app, TAB, &r);
     Ok(())
 }
 
@@ -112,6 +178,7 @@ pub fn set_tab_hidden(app: &AppHandle, hidden: bool) {
     }
     if let Some(w) = app.get_webview_window(TAB) {
         let _ = if hidden { w.hide() } else { w.show() };
+        make_popup(&w);
     }
     if hidden {
         crate::hover::force_hide(app);
@@ -149,9 +216,13 @@ pub fn create_pile(app: &AppHandle) -> tauri::Result<()> {
         .focusable(false)
         .focused(false)
         .visible(false)
+        .min_inner_size(CARD_W + PEEK + PILE_PAD, GHOST_H)
         .position(0.0, 0.0)
         .inner_size(CARD_W + PEEK + PILE_PAD, 200.0)
         .build()?;
+    if let Some(w) = app.get_webview_window(PILE) {
+        make_popup(&w);
+    }
     Ok(())
 }
 
@@ -217,13 +288,14 @@ pub fn cursor_over_dock(app: &AppHandle) -> bool {
     over(TAB) || over(PILE)
 }
 
-/// Creates the note's window at its saved rect, or a fresh cascaded spot; focuses it if open.
-pub fn open_note_window(app: &AppHandle, note: &Note) -> tauri::Result<()> {
+/// Creates the note's window at its saved rect, or a fresh cascaded spot, and
+/// returns the content rect it was given. Focuses the window if it already exists.
+pub fn open_note_window(app: &AppHandle, note: &Note) -> tauri::Result<Option<Rect>> {
     let label = note_label(&note.id);
     if let Some(w) = app.get_webview_window(&label) {
         w.show()?;
         w.set_focus()?;
-        return Ok(());
+        return Ok(None);
     }
     let area = work_area(app);
     let saved = note.window.map(|r| Rect {
@@ -256,7 +328,13 @@ pub fn open_note_window(app: &AppHandle, note: &Note) -> tauri::Result<()> {
         .inner_size(r.w, r.h)
         .focused(true)
         .build()?;
-    Ok(())
+    #[cfg(debug_assertions)]
+    if std::env::var_os("CUTE_STICKY_DEVTOOLS").is_some() {
+        if let Some(w) = app.get_webview_window(&label) {
+            w.open_devtools();
+        }
+    }
+    Ok(Some(content))
 }
 
 pub fn close_note_window(app: &AppHandle, id: &str) {
@@ -279,8 +357,26 @@ pub fn reopen_notes(app: &AppHandle) {
         store.notes().iter().filter(|n| n.open).cloned().collect()
     };
     for note in open {
-        if let Err(err) = open_note_window(app, &note) {
-            log::error!("could not reopen note {}: {err}", note.id);
+        match open_note_window(app, &note) {
+            Ok(rect) => remember_rect(app, &note.id, rect),
+            Err(err) => log::error!("could not reopen note {}: {err}", note.id),
         }
+    }
+}
+
+/// Stores the content rect a freshly created note window was given.
+pub fn remember_rect(app: &AppHandle, id: &str, rect: Option<Rect>) {
+    let Some(r) = rect else {
+        return;
+    };
+    let state = app.state::<AppState>();
+    let mut store = state.store.lock().unwrap();
+    if let Some(note) = store.note_mut(id) {
+        note.window = Some(crate::store::WindowRect {
+            x: r.x,
+            y: r.y,
+            w: r.w,
+            h: r.h,
+        });
     }
 }

@@ -1,4 +1,8 @@
 //! The commands the three pages call.
+//!
+//! Commands that create, destroy or restyle windows are `async`: a synchronous
+//! command runs on the main thread, and on Windows a webview cannot finish
+//! initialising while that thread is blocked inside the command.
 
 use tauri::{AppHandle, Manager, State};
 
@@ -16,10 +20,11 @@ pub fn get_note(state: State<AppState>, id: String) -> Option<Note> {
 }
 
 #[tauri::command]
-pub fn create_note(app: AppHandle, state: State<AppState>) -> Result<Note, String> {
+pub async fn create_note(app: AppHandle, state: State<'_, AppState>) -> Result<Note, String> {
     let note = state.store.lock().unwrap().create_note();
     hover::force_hide(&app);
-    windows::open_note_window(&app, &note).map_err(|e| e.to_string())?;
+    let rect = windows::open_note_window(&app, &note).map_err(|e| e.to_string())?;
+    windows::remember_rect(&app, &note.id, rect);
     emit_changed(&app);
     Ok(note)
 }
@@ -53,7 +58,7 @@ pub fn update_note(
 }
 
 #[tauri::command]
-pub fn delete_note(app: AppHandle, state: State<AppState>, id: String) -> Result<(), String> {
+pub async fn delete_note(app: AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
     if !state.store.lock().unwrap().delete_note(&id) {
         return Err("no such note".into());
     }
@@ -63,7 +68,7 @@ pub fn delete_note(app: AppHandle, state: State<AppState>, id: String) -> Result
 }
 
 #[tauri::command]
-pub fn open_note(app: AppHandle, state: State<AppState>, id: String) -> Result<(), String> {
+pub async fn open_note(app: AppHandle, state: State<'_, AppState>, id: String) -> Result<(), String> {
     let note = {
         let mut store = state.store.lock().unwrap();
         let note = store.note_mut(&id).ok_or("no such note")?;
@@ -71,13 +76,14 @@ pub fn open_note(app: AppHandle, state: State<AppState>, id: String) -> Result<(
         note.clone()
     };
     hover::force_hide(&app);
-    windows::open_note_window(&app, &note).map_err(|e| e.to_string())?;
+    let rect = windows::open_note_window(&app, &note).map_err(|e| e.to_string())?;
+    windows::remember_rect(&app, &note.id, rect);
     emit_changed(&app);
     Ok(())
 }
 
 #[tauri::command]
-pub fn close_note(app: AppHandle, id: String) -> Result<(), String> {
+pub async fn close_note(app: AppHandle, id: String) -> Result<(), String> {
     mark_closed(&app, &id);
     windows::close_note_window(&app, &id);
     Ok(())
@@ -102,9 +108,9 @@ pub fn mark_closed(app: &AppHandle, id: &str) {
 }
 
 #[tauri::command]
-pub fn set_note_pinned(
+pub async fn set_note_pinned(
     app: AppHandle,
-    state: State<AppState>,
+    state: State<'_, AppState>,
     id: String,
     pinned: bool,
 ) -> Result<(), String> {

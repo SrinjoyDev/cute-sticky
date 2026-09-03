@@ -24,7 +24,14 @@ export function fmtAgo(ts: number, now = Date.now()): string {
   if (h < 24) return `${Math.round(h)} h ago`;
   const d = h / 24;
   if (d < 2) return 'yesterday';
-  return `${Math.round(d)} days ago`;
+  if (d < 30) return `${Math.round(d)} days ago`;
+  const date = new Date(ts);
+  const sameYear = date.getFullYear() === new Date(now).getFullYear();
+  return date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
 }
 
 export interface Debounced<A extends unknown[]> {

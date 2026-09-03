@@ -26,7 +26,7 @@ pub const TAB_W: f64 = 22.0;
 pub const TAB_SHADOW: f64 = 8.0;
 pub const TAB_WINDOW_W: f64 = TAB_W + TAB_SHADOW;
 pub const MAX_DOTS: usize = 8;
-const TAB_MIN_H: f64 = 26.0;
+pub const TAB_MIN_H: f64 = 26.0;
 const DOT_STEP: f64 = 13.0;
 const MORE_LABEL_H: f64 = 12.0;
 

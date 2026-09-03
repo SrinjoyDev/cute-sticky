@@ -38,6 +38,9 @@ pub struct Settings {
     /// Vertical centre of the tab as a fraction of the work-area height.
     pub tab_y: f64,
     pub tab_hidden: bool,
+    /// Launch with Windows. On by default; the registry entry is refreshed on
+    /// every release-build start so it always points at the current exe.
+    pub autostart: bool,
 }
 
 impl Default for Settings {
@@ -45,6 +48,7 @@ impl Default for Settings {
         Settings {
             tab_y: 0.36,
             tab_hidden: false,
+            autostart: true,
         }
     }
 }
@@ -304,6 +308,16 @@ mod tests {
         assert_eq!(id.len(), 10);
         assert!(id.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit()));
         assert_ne!(id, new_id());
+    }
+
+    #[test]
+    fn settings_missing_from_older_files_get_defaults() {
+        let path = temp_path();
+        fs::write(&path, r#"{"version":1,"settings":{"tabY":0.5},"notes":[]}"#).unwrap();
+        let store = Store::load(path);
+        assert_eq!(store.data().settings.tab_y, 0.5);
+        assert!(store.data().settings.autostart);
+        assert!(!store.data().settings.tab_hidden);
     }
 
     #[test]

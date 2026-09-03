@@ -25,6 +25,8 @@ export interface Settings {
   /** Vertical centre of the tab as a fraction of the work-area height. */
   tabY: number;
   tabHidden: boolean;
+  /** Launch with Windows. */
+  autostart: boolean;
 }
 
 export interface Data {

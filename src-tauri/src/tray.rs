@@ -3,27 +3,25 @@
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Manager, Wry};
-use tauri_plugin_autostart::ManagerExt;
 
-use crate::{flush_now, notes, windows, AppState};
+use crate::{flush_now, notes, schedule_flush, sync_autostart, windows, AppState};
 
 pub struct TrayHandles {
     tab_item: MenuItem<Wry>,
     autostart_item: CheckMenuItem<Wry>,
 }
 
+fn current_settings(app: &AppHandle) -> (bool, bool) {
+    let state = app.state::<AppState>();
+    let store = state.store.lock().unwrap();
+    let settings = &store.data().settings;
+    (settings.tab_hidden, settings.autostart)
+}
+
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
-    let hidden = app
-        .state::<AppState>()
-        .store
-        .lock()
-        .unwrap()
-        .data()
-        .settings
-        .tab_hidden;
+    let (hidden, autostart_on) = current_settings(app);
     let new_item = MenuItem::with_id(app, "new", "New note", true, None::<&str>)?;
     let tab_item = MenuItem::with_id(app, "tab", tab_label(hidden), true, None::<&str>)?;
-    let autostart_on = app.autolaunch().is_enabled().unwrap_or(false);
     let autostart_item = CheckMenuItem::with_id(
         app,
         "autostart",
@@ -53,24 +51,19 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
                 });
             }
             "tab" => {
-                let hidden = app
-                    .state::<AppState>()
-                    .store
-                    .lock()
-                    .unwrap()
-                    .data()
-                    .settings
-                    .tab_hidden;
+                let (hidden, _) = current_settings(app);
                 windows::set_tab_hidden(app, !hidden);
             }
             "autostart" => {
-                let launcher = app.autolaunch();
-                let on = launcher.is_enabled().unwrap_or(false);
-                let result = if on { launcher.disable() } else { launcher.enable() };
-                if let Err(err) = result {
-                    log::error!("autostart toggle failed: {err}");
+                {
+                    let state = app.state::<AppState>();
+                    let mut store = state.store.lock().unwrap();
+                    let settings = store.settings_mut();
+                    settings.autostart = !settings.autostart;
                 }
+                sync_autostart(app);
                 refresh(app);
+                schedule_flush(app);
             }
             "quit" => {
                 flush_now(app);
@@ -95,11 +88,10 @@ fn tab_label(hidden: bool) -> &'static str {
     }
 }
 
-/// Syncs the menu's label and check mark with the current state.
+/// Syncs the menu's label and check mark with the current settings.
 pub fn refresh(app: &AppHandle) {
+    let (hidden, on) = current_settings(app);
     let state = app.state::<AppState>();
-    let hidden = state.store.lock().unwrap().data().settings.tab_hidden;
-    let on = app.autolaunch().is_enabled().unwrap_or(false);
     let tray = state.tray.lock().unwrap();
     if let Some(t) = tray.as_ref() {
         let _ = t.tab_item.set_text(tab_label(hidden));

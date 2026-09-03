@@ -22,7 +22,7 @@ use crate::AppState;
 mod win32 {
     use std::ffi::c_void;
 
-    type HWND = *mut c_void;
+    type Hwnd = *mut c_void;
     const GWL_STYLE: i32 = -16;
     const WS_POPUP: isize = 0x8000_0000;
     const WS_CAPTION: isize = 0x00C0_0000;
@@ -37,16 +37,16 @@ mod win32 {
 
     #[link(name = "user32")]
     extern "system" {
-        fn GetWindowLongPtrW(hwnd: HWND, index: i32) -> isize;
-        fn SetWindowLongPtrW(hwnd: HWND, index: i32, value: isize) -> isize;
-        fn SetWindowPos(hwnd: HWND, after: HWND, x: i32, y: i32, cx: i32, cy: i32, flags: u32) -> i32;
+        fn GetWindowLongPtrW(hwnd: Hwnd, index: i32) -> isize;
+        fn SetWindowLongPtrW(hwnd: Hwnd, index: i32, value: isize) -> isize;
+        fn SetWindowPos(hwnd: Hwnd, after: Hwnd, x: i32, y: i32, cx: i32, cy: i32, flags: u32) -> i32;
     }
 
     pub fn make_popup(window: &tauri::WebviewWindow) {
         let Ok(hwnd) = window.hwnd() else {
             return;
         };
-        let hwnd = hwnd.0 as isize as HWND;
+        let hwnd = hwnd.0 as isize as Hwnd;
         // SAFETY: plain user32 calls on a window handle owned by this process.
         unsafe {
             let style = GetWindowLongPtrW(hwnd, GWL_STYLE);

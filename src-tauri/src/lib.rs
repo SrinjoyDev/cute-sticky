@@ -16,7 +16,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent};
-use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 use geometry::{note_content_rect, Rect};
 use store::{Store, WindowRect};
@@ -82,6 +82,33 @@ pub fn emit_changed(app: &AppHandle) {
     schedule_flush(app);
 }
 
+/// Makes the OS autostart entry match `settings.autostart`. Debug builds leave the
+/// registry alone so a development binary never registers itself.
+pub fn sync_autostart(app: &AppHandle) {
+    if cfg!(debug_assertions) {
+        return;
+    }
+    let want = app
+        .state::<AppState>()
+        .store
+        .lock()
+        .unwrap()
+        .data()
+        .settings
+        .autostart;
+    let launcher = app.autolaunch();
+    let result = if want {
+        launcher.enable()
+    } else if launcher.is_enabled().unwrap_or(false) {
+        launcher.disable()
+    } else {
+        Ok(())
+    };
+    if let Err(err) = result {
+        log::error!("could not update start-with-Windows: {err}");
+    }
+}
+
 pub fn run() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
@@ -95,6 +122,7 @@ pub fn run() {
             let store = Store::load(dir.join("notes.json"));
             app.manage(AppState::new(store));
             let handle = app.handle().clone();
+            sync_autostart(&handle);
             tray::build(&handle)?;
             windows::create_tab(&handle)?;
             windows::create_pile(&handle)?;

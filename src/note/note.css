@@ -6,8 +6,7 @@
   display: flex;
   flex-direction: column;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 42%),
-    var(--paper);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 42%), var(--paper);
   border-radius: 14px;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.55),
@@ -226,10 +225,16 @@ body.closing .note {
   cursor: nwse-resize;
   opacity: 0.7;
   background:
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 9px / 4px 4px no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 9px / 4px 4px no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 5px / 4px 4px no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 1px 9px / 4px 4px no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 5px / 4px 4px no-repeat,
-    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 1px / 4px 4px no-repeat;
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 9px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 9px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 5px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 1px 9px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 5px 5px / 4px 4px
+      no-repeat,
+    radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 1px / 4px 4px
+      no-repeat;
 }

@@ -110,9 +110,12 @@ function open(payload: PileOpen): void {
   void pile.offsetWidth;
   pile.classList.remove('stack');
   dealt = true;
-  dealTimer = setTimeout(() => {
-    for (const el of $$('.fc, .ghost', pile)) el.style.transitionDelay = '';
-  }, DEAL_MS + cards.length * STAGGER_MS);
+  dealTimer = setTimeout(
+    () => {
+      for (const el of $$('.fc, .ghost', pile)) el.style.transitionDelay = '';
+    },
+    DEAL_MS + cards.length * STAGGER_MS,
+  );
 }
 
 function fold(): void {

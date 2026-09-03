@@ -150,20 +150,20 @@ debounce (300 ms) coalesces further.
 
 Commands (frontend → Rust):
 
-| command | args | effect |
-|---|---|---|
-| `list_notes` | | notes + settings snapshot |
-| `get_note` | id | one note |
-| `create_note` | | new note in the next colour, opened, returns it |
-| `update_note` | id, content?, color? | persist edits, bump `updatedAt` |
-| `delete_note` | id | remove, close its window |
-| `open_note` | id | create or focus its window |
-| `close_note` | id | mark closed, close its window |
-| `set_note_pinned` | id, pinned | toggle always-on-top |
-| `hover` | source (`tab`/`pile`), inside (bool) | feed the hover machine |
-| `pile_hidden` | | pile finished its fold animation |
-| `tab_drag` | dy | move the tab, persist `tabY` on release |
-| `start_resize` | | begin a native south-east resize drag |
+| command           | args                                 | effect                                          |
+| ----------------- | ------------------------------------ | ----------------------------------------------- |
+| `list_notes`      |                                      | notes + settings snapshot                       |
+| `get_note`        | id                                   | one note                                        |
+| `create_note`     |                                      | new note in the next colour, opened, returns it |
+| `update_note`     | id, content?, color?                 | persist edits, bump `updatedAt`                 |
+| `delete_note`     | id                                   | remove, close its window                        |
+| `open_note`       | id                                   | create or focus its window                      |
+| `close_note`      | id                                   | mark closed, close its window                   |
+| `set_note_pinned` | id, pinned                           | toggle always-on-top                            |
+| `hover`           | source (`tab`/`pile`), inside (bool) | feed the hover machine                          |
+| `pile_hidden`     |                                      | pile finished its fold animation                |
+| `tab_drag`        | dy                                   | move the tab, persist `tabY` on release         |
+| `start_resize`    |                                      | begin a native south-east resize drag           |
 
 Events (Rust → windows):
 

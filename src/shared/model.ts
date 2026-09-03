@@ -68,14 +68,22 @@ export function applyShortcut(b: Block): Block | null {
   if (b.type !== 'check') {
     const m = /^\[( |x|X)?\] /.exec(b.text);
     if (m) {
-      return { type: 'check', text: b.text.slice(m[0].length), done: (m[1] ?? '').toLowerCase() === 'x' };
+      return {
+        type: 'check',
+        text: b.text.slice(m[0].length),
+        done: (m[1] ?? '').toLowerCase() === 'x',
+      };
     }
   }
   return null;
 }
 
 /** Enter: split block `i` at `offset`. An empty list item leaves the list instead. */
-export function splitAt(blocks: Block[], i: number, offset: number): { blocks: Block[]; focus: number } {
+export function splitAt(
+  blocks: Block[],
+  i: number,
+  offset: number,
+): { blocks: Block[]; focus: number } {
   const cur = blocks[i];
   const out = blocks.slice();
   if (cur.type !== 'p' && cur.text.trim() === '') {

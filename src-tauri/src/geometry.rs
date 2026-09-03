@@ -60,7 +60,12 @@ pub fn tab_rect(area: &Rect, tab_y: f64, note_count: usize) -> Rect {
     let lo = area.y + h / 2.0 + 4.0;
     let hi = (area.bottom() - h / 2.0 - 4.0).max(lo);
     let center = (area.y + tab_y * area.h).clamp(lo, hi);
-    Rect { x: area.right() - TAB_WINDOW_W, y: center - h / 2.0, w: TAB_WINDOW_W, h }
+    Rect {
+        x: area.right() - TAB_WINDOW_W,
+        y: center - h / 2.0,
+        w: TAB_WINDOW_W,
+        h,
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
@@ -83,10 +88,24 @@ pub fn pile_layout(note_count: usize, area_h: f64) -> PileLayout {
         ((area_h - 200.0 - CARD_H - GHOST_H) / (n - 1.0)).clamp(STEP_MIN, STEP_MAX)
     };
     let push = CARD_H - step + GHOST_GAP;
-    let ghost_top = if note_count == 0 { 0.0 } else { (n - 1.0) * step + CARD_H + GHOST_GAP };
+    let ghost_top = if note_count == 0 {
+        0.0
+    } else {
+        (n - 1.0) * step + CARD_H + GHOST_GAP
+    };
     let visible_h = ghost_top + GHOST_H;
-    let total_h = if note_count == 0 { visible_h } else { visible_h + push };
-    PileLayout { step, visible_h, total_h, push, width: CARD_W + PEEK + PILE_PAD }
+    let total_h = if note_count == 0 {
+        visible_h
+    } else {
+        visible_h + push
+    };
+    PileLayout {
+        step,
+        visible_h,
+        total_h,
+        push,
+        width: CARD_W + PEEK + PILE_PAD,
+    }
 }
 
 /// Pile window rect: left of the tab, centred on it, kept inside the work area.
@@ -95,7 +114,12 @@ pub fn pile_rect(area: &Rect, tab: &Rect, layout: &PileLayout) -> Rect {
     let lo = area.y + 4.0;
     let hi = (area.bottom() - layout.total_h - 4.0).max(lo);
     let y = (tab.center_y() - layout.visible_h / 2.0).clamp(lo, hi);
-    Rect { x, y, w: layout.width, h: layout.total_h }
+    Rect {
+        x,
+        y,
+        w: layout.width,
+        h: layout.total_h,
+    }
 }
 
 /// Content rect for a note opened for the first time: left of the tab, cascading.
@@ -107,8 +131,14 @@ pub fn default_note_rect(area: &Rect, tab: &Rect, cascade: usize, w: f64, h: f64
 }
 
 pub fn clamp_into(r: Rect, area: &Rect, margin: f64) -> Rect {
-    let x = r.x.clamp(area.x + margin, (area.right() - r.w - margin).max(area.x + margin));
-    let y = r.y.clamp(area.y + margin, (area.bottom() - r.h - margin).max(area.y + margin));
+    let x = r.x.clamp(
+        area.x + margin,
+        (area.right() - r.w - margin).max(area.x + margin),
+    );
+    let y = r.y.clamp(
+        area.y + margin,
+        (area.bottom() - r.h - margin).max(area.y + margin),
+    );
     Rect { x, y, ..r }
 }
 
@@ -140,7 +170,12 @@ mod tests {
     use super::*;
 
     fn area() -> Rect {
-        Rect { x: 0.0, y: 0.0, w: 1920.0, h: 1032.0 }
+        Rect {
+            x: 0.0,
+            y: 0.0,
+            w: 1920.0,
+            h: 1032.0,
+        }
     }
 
     #[test]
@@ -208,14 +243,24 @@ mod tests {
         assert!(a.right() < tab.x);
         assert_eq!(b.x, a.x - 26.0);
         assert_eq!(b.y, a.y + 26.0);
-        let small = Rect { x: 0.0, y: 0.0, w: 300.0, h: 200.0 };
+        let small = Rect {
+            x: 0.0,
+            y: 0.0,
+            w: 300.0,
+            h: 200.0,
+        };
         let squeezed = default_note_rect(&small, &tab, 0, 270.0, 230.0);
         assert!(squeezed.x >= 12.0);
     }
 
     #[test]
     fn window_and_content_rects_round_trip() {
-        let content = Rect { x: 100.0, y: 200.0, w: 270.0, h: 230.0 };
+        let content = Rect {
+            x: 100.0,
+            y: 200.0,
+            w: 270.0,
+            h: 230.0,
+        };
         let win = note_window_rect(&content);
         assert_eq!(win.w, 270.0 + 2.0 * NOTE_MARGIN);
         assert_eq!(note_content_rect(&win), content);
@@ -223,8 +268,29 @@ mod tests {
 
     #[test]
     fn intersects_detects_overlap() {
-        let a = Rect { x: 0.0, y: 0.0, w: 10.0, h: 10.0 };
-        assert!(intersects(&a, &Rect { x: 5.0, y: 5.0, w: 10.0, h: 10.0 }));
-        assert!(!intersects(&a, &Rect { x: 10.0, y: 0.0, w: 10.0, h: 10.0 }));
+        let a = Rect {
+            x: 0.0,
+            y: 0.0,
+            w: 10.0,
+            h: 10.0,
+        };
+        assert!(intersects(
+            &a,
+            &Rect {
+                x: 5.0,
+                y: 5.0,
+                w: 10.0,
+                h: 10.0
+            }
+        ));
+        assert!(!intersects(
+            &a,
+            &Rect {
+                x: 10.0,
+                y: 0.0,
+                w: 10.0,
+                h: 10.0
+            }
+        ));
     }
 }

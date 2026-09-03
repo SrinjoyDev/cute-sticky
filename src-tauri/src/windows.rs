@@ -39,7 +39,12 @@ pub fn work_area(app: &AppHandle) -> Rect {
                 h: wa.size.height as f64 / s,
             }
         }
-        None => Rect { x: 0.0, y: 0.0, w: 1280.0, h: 720.0 },
+        None => Rect {
+            x: 0.0,
+            y: 0.0,
+            w: 1280.0,
+            h: 720.0,
+        },
     }
 }
 
@@ -49,7 +54,12 @@ fn window_rect(app: &AppHandle, label: &str) -> Option<Rect> {
     let s = w.scale_factor().ok()?;
     let p = w.outer_position().ok()?;
     let z = w.inner_size().ok()?;
-    Some(Rect { x: p.x as f64 / s, y: p.y as f64 / s, w: z.width as f64 / s, h: z.height as f64 / s })
+    Some(Rect {
+        x: p.x as f64 / s,
+        y: p.y as f64 / s,
+        w: z.width as f64 / s,
+        h: z.height as f64 / s,
+    })
 }
 
 fn set_rect(app: &AppHandle, label: &str, r: &Rect) {
@@ -64,7 +74,10 @@ fn settings_tab_rect(app: &AppHandle) -> (Rect, bool) {
     let state = app.state::<AppState>();
     let store = state.store.lock().unwrap();
     let d = store.data();
-    (tab_rect(&area, d.settings.tab_y, d.notes.len()), d.settings.tab_hidden)
+    (
+        tab_rect(&area, d.settings.tab_y, d.notes.len()),
+        d.settings.tab_hidden,
+    )
 }
 
 pub fn create_tab(app: &AppHandle) -> tauri::Result<()> {
@@ -213,7 +226,12 @@ pub fn open_note_window(app: &AppHandle, note: &Note) -> tauri::Result<()> {
         return Ok(());
     }
     let area = work_area(app);
-    let saved = note.window.map(|r| Rect { x: r.x, y: r.y, w: r.w, h: r.h });
+    let saved = note.window.map(|r| Rect {
+        x: r.x,
+        y: r.y,
+        w: r.w,
+        h: r.h,
+    });
     let content = match saved {
         Some(r) if intersects(&r, &area) => r,
         _ => {

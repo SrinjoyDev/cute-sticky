@@ -53,7 +53,8 @@ pub fn schedule_flush(app: &AppHandle) {
         std::thread::sleep(Duration::from_millis(300));
         let state = app.state::<AppState>();
         state.flush_pending.store(false, Ordering::SeqCst);
-        if let Err(err) = state.store.lock().unwrap().save_if_dirty() {
+        let result = state.store.lock().unwrap().save_if_dirty();
+        if let Err(err) = result {
             log::error!("save failed: {err}");
         }
     });
@@ -61,7 +62,8 @@ pub fn schedule_flush(app: &AppHandle) {
 
 pub fn flush_now(app: &AppHandle) {
     let state = app.state::<AppState>();
-    if let Err(err) = state.store.lock().unwrap().save_if_dirty() {
+    let result = state.store.lock().unwrap().save_if_dirty();
+    if let Err(err) = result {
         log::error!("save failed: {err}");
     }
 }
@@ -124,7 +126,12 @@ pub fn run() {
                         let state = app.state::<AppState>();
                         let mut store = state.store.lock().unwrap();
                         if let Some(note) = store.note_mut(&id) {
-                            note.window = Some(WindowRect { x: c.x, y: c.y, w: c.w, h: c.h });
+                            note.window = Some(WindowRect {
+                                x: c.x,
+                                y: c.y,
+                                w: c.w,
+                                h: c.h,
+                            });
                         }
                     }
                     schedule_flush(&app);

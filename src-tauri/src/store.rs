@@ -42,7 +42,10 @@ pub struct Settings {
 
 impl Default for Settings {
     fn default() -> Self {
-        Settings { tab_y: 0.36, tab_hidden: false }
+        Settings {
+            tab_y: 0.36,
+            tab_hidden: false,
+        }
     }
 }
 
@@ -56,7 +59,11 @@ pub struct Data {
 
 impl Default for Data {
     fn default() -> Self {
-        Data { version: 1, settings: Settings::default(), notes: Vec::new() }
+        Data {
+            version: 1,
+            settings: Settings::default(),
+            notes: Vec::new(),
+        }
     }
 }
 
@@ -84,7 +91,11 @@ impl Store {
                 Data::default()
             }
         };
-        Store { path, data, dirty: false }
+        Store {
+            path,
+            data,
+            dirty: false,
+        }
     }
 
     pub fn data(&self) -> &Data {
@@ -168,7 +179,9 @@ impl Store {
 
 /// The colour after the last note's colour, so new notes walk the palette.
 pub fn next_color(notes: &[Note]) -> &'static str {
-    let last = notes.last().and_then(|n| COLORS.iter().position(|c| *c == n.color));
+    let last = notes
+        .last()
+        .and_then(|n| COLORS.iter().position(|c| *c == n.color));
     match last {
         Some(i) => COLORS[(i + 1) % COLORS.len()],
         None => COLORS[0],
@@ -183,14 +196,19 @@ fn quarantine(path: &Path) {
 }
 
 pub fn now_ms() -> u64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0)
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
 }
 
 pub fn new_id() -> String {
     use rand::Rng;
     const ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyz0123456789";
     let mut rng = rand::thread_rng();
-    (0..10).map(|_| ALPHABET[rng.gen_range(0..ALPHABET.len())] as char).collect()
+    (0..10)
+        .map(|_| ALPHABET[rng.gen_range(0..ALPHABET.len())] as char)
+        .collect()
 }
 
 #[cfg(test)]

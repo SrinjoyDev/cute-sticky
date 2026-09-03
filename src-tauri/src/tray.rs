@@ -13,12 +13,25 @@ pub struct TrayHandles {
 }
 
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
-    let hidden = app.state::<AppState>().store.lock().unwrap().data().settings.tab_hidden;
+    let hidden = app
+        .state::<AppState>()
+        .store
+        .lock()
+        .unwrap()
+        .data()
+        .settings
+        .tab_hidden;
     let new_item = MenuItem::with_id(app, "new", "New note", true, None::<&str>)?;
     let tab_item = MenuItem::with_id(app, "tab", tab_label(hidden), true, None::<&str>)?;
     let autostart_on = app.autolaunch().is_enabled().unwrap_or(false);
-    let autostart_item =
-        CheckMenuItem::with_id(app, "autostart", "Start with Windows", true, autostart_on, None::<&str>)?;
+    let autostart_item = CheckMenuItem::with_id(
+        app,
+        "autostart",
+        "Start with Windows",
+        true,
+        autostart_on,
+        None::<&str>,
+    )?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let menu = Menu::with_items(app, &[&new_item, &tab_item, &autostart_item, &separator, &quit])?;
@@ -37,7 +50,14 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
                 }
             }
             "tab" => {
-                let hidden = app.state::<AppState>().store.lock().unwrap().data().settings.tab_hidden;
+                let hidden = app
+                    .state::<AppState>()
+                    .store
+                    .lock()
+                    .unwrap()
+                    .data()
+                    .settings
+                    .tab_hidden;
                 windows::set_tab_hidden(app, !hidden);
             }
             "autostart" => {
@@ -57,7 +77,10 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
         })
         .build(app)?;
 
-    app.state::<AppState>().tray.lock().unwrap().replace(TrayHandles { tab_item, autostart_item });
+    app.state::<AppState>().tray.lock().unwrap().replace(TrayHandles {
+        tab_item,
+        autostart_item,
+    });
     Ok(())
 }
 
@@ -74,7 +97,8 @@ pub fn refresh(app: &AppHandle) {
     let state = app.state::<AppState>();
     let hidden = state.store.lock().unwrap().data().settings.tab_hidden;
     let on = app.autolaunch().is_enabled().unwrap_or(false);
-    if let Some(t) = state.tray.lock().unwrap().as_ref() {
+    let tray = state.tray.lock().unwrap();
+    if let Some(t) = tray.as_ref() {
         let _ = t.tab_item.set_text(tab_label(hidden));
         let _ = t.autostart_item.set_checked(on);
     }

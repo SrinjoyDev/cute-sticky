@@ -64,10 +64,10 @@ body.closing .note {
   clip-path: ellipse(50% 50% at 50% 50%);
 }
 .shape-cloud {
-  --safe-top: 19cqh;
-  --safe-right: 11cqw;
+  --safe-top: 30cqh;
+  --safe-right: 19cqw;
   --safe-bottom: 11cqh;
-  --safe-left: 11cqw;
+  --safe-left: 21cqw;
 }
 .shape-cloud .paper {
   clip-path: url(#clip-cloud);

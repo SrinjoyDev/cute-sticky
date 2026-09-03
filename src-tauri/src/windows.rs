@@ -259,6 +259,12 @@ pub fn fold_pile(app: &AppHandle) {
     let _ = app.emit_to(EventTarget::labeled(PILE), "pile-fold", ());
 }
 
+pub fn pile_is_visible(app: &AppHandle) -> bool {
+    app.get_webview_window(PILE)
+        .and_then(|w| w.is_visible().ok())
+        .unwrap_or(false)
+}
+
 pub fn hide_pile(app: &AppHandle) {
     if let Some(w) = app.get_webview_window(PILE) {
         let _ = w.hide();

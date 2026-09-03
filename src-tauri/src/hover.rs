@@ -44,6 +44,10 @@ pub fn hover(app: &AppHandle, source: &str, inside: bool) {
     let generation = h.generation;
 
     if inside {
+        // A stale "visible" (the window was hidden behind our back) must not block a show.
+        if h.visible && !h.folding && !windows::pile_is_visible(app) {
+            h.visible = false;
+        }
         if h.visible {
             if h.folding {
                 h.folding = false;

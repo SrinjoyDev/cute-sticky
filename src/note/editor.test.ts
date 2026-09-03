@@ -52,7 +52,11 @@ describe('editor DOM layer', () => {
   it('Enter splits the block at the caret', () => {
     const { root, onChange } = mount([p('hello world')]);
     placeCaret(textOf(root, 0).firstChild!, 5);
-    const ev = new InputEvent('beforeinput', { inputType: 'insertParagraph', bubbles: true, cancelable: true });
+    const ev = new InputEvent('beforeinput', {
+      inputType: 'insertParagraph',
+      bubbles: true,
+      cancelable: true,
+    });
     root.dispatchEvent(ev);
     expect(ev.defaultPrevented).toBe(true);
     expect(onChange).toHaveBeenLastCalledWith([p('hello'), p(' world')]);

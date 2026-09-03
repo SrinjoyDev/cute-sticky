@@ -70,7 +70,9 @@ export function installPageDefaults(): void {
     document.addEventListener('contextmenu', (e) => e.preventDefault());
   } else {
     window.addEventListener('error', (e) => reportError(`${e.message}\n${e.error?.stack ?? ''}`));
-    window.addEventListener('unhandledrejection', (e) => reportError(`unhandled: ${String(e.reason)}`));
+    window.addEventListener('unhandledrejection', (e) =>
+      reportError(`unhandled: ${String(e.reason)}`),
+    );
   }
   document.addEventListener('dragstart', (e) => e.preventDefault());
 }

@@ -19,9 +19,13 @@ document.body.appendChild(note);
 window.__log = [];
 window.__last = '';
 const body = note.querySelector<HTMLElement>('.nb')!;
-const editor = createEditor(body, parse(new URLSearchParams(location.search).get('text') ?? ''), (blocks) => {
-  window.__last = serialize(blocks);
-  window.__log.push(window.__last);
-});
+const editor = createEditor(
+  body,
+  parse(new URLSearchParams(location.search).get('text') ?? ''),
+  (blocks) => {
+    window.__last = serialize(blocks);
+    window.__log.push(window.__last);
+  },
+);
 createToolbar(note, body, editor);
 editor.focusEnd();

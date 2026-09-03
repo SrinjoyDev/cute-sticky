@@ -68,7 +68,9 @@ async function main(): Promise<void> {
   let closing = false;
 
   const save = debounce((blocks: Block[]) => {
-    ipc.updateNote(id, { content: serialize(blocks) }).catch((err) => reportError(`save failed: ${String(err)}`));
+    ipc
+      .updateNote(id, { content: serialize(blocks) })
+      .catch((err) => reportError(`save failed: ${String(err)}`));
   }, SAVE_MS);
   const editor = createEditor(body, parse(note.content), save);
   createToolbar(el, body, editor);

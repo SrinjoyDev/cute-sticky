@@ -230,8 +230,9 @@ instance forwards to the first, which shows the tab if hidden.
 
 - `cargo test`: store round-trip, atomic write, corrupt-file quarantine,
   geometry clamping and placement.
-- `npm test` (Vitest): model parse/serialize and every edit operation; pile
-  layout math.
+- `npm test` (Vitest): model parse/serialize and every edit operation, inline
+  markup round trips and escaping, pile layout math, and the editor's DOM layer
+  under jsdom (rows, typing, Enter, shortcuts, repair of stray nodes).
 - Manual on Windows before each release: the ten stages of the mockup.
 - CI on `windows-latest` runs both test suites, clippy, rustfmt, and a build.
 

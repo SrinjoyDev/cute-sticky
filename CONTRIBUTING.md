@@ -44,7 +44,7 @@ Run all of these before opening a pull request; CI runs the same set.
 
 ```powershell
 npm run lint        # tsc + prettier
-npm test            # vitest: editor model and pile layout
+npm test            # vitest: editor model, inline formatting, pile layout, editor DOM (jsdom)
 npm run build       # production bundle of the three pages
 cd src-tauri
 cargo fmt --check
@@ -71,8 +71,20 @@ docs/superpowers/specs   the design document
 docs/mockups             the interactive HTML mockup the design came from
 ```
 
-Logic that can be pure goes in `model.ts`, `layout.ts`, `store.rs` or
-`geometry.rs` with a test. The DOM and window code stays thin.
+Logic that can be pure goes in `model.ts`, `inline.ts`, `layout.ts`, `store.rs`
+or `geometry.rs` with a test. The DOM and window code stays thin; the editor's
+DOM layer has jsdom tests in `src/note/editor.test.ts`.
+
+To poke at the editor in a normal browser without Tauri, build the harness
+page and open it:
+
+```powershell
+npx vite build --config dev/vite.harness.config.ts
+# then serve dev/dist with any static server and open harness.html
+```
+
+It mounts the editor and the formatting pill and mirrors every change into
+`window.__last`.
 
 ## Style
 

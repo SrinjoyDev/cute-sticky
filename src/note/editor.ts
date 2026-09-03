@@ -141,7 +141,8 @@ export function createEditor(
   root.classList.add('editor');
   root.contentEditable = 'true';
   root.spellcheck = false;
-  if (typeof document.execCommand === 'function') document.execCommand('styleWithCSS', false, 'false');
+  if (typeof document.execCommand === 'function')
+    document.execCommand('styleWithCSS', false, 'false');
 
   function renderAll(): void {
     root.replaceChildren(...blocks.map(rowEl));

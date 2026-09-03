@@ -128,10 +128,22 @@ After every input the model is re-read from the DOM; if the browser left a
 shape the editor does not render (stray nodes, nested rows, a newline in a
 text node) the rows are rebuilt from the model and the caret restored.
 
-The selection pill (`src/note/toolbar.ts`) appears above any non-empty
-selection inside the editor with B, I, U and S buttons whose active state
-mirrors `queryCommandState`, and hides when the selection collapses or leaves
-the editor.
+A bottom toolbar (`src/note/bar.ts`) sits under the text, visible while the
+note is hovered or focused: Bullets and Checklist toggle the caret's line (or
+every line in the selection) between that list type and plain; B, I, U and S
+toggle inline styles. Active states follow the caret.
+
+## Shapes
+
+A note has a `shape`: `square` (default), `circle`, `cloud`, `heart` or
+`bubble`, chosen from a picker next to the colour dot and stored per note
+(files without the field load as square). `src/shared/shapes.ts` holds each
+shape's clip (a CSS basic shape or an SVG path in objectBoundingBox units, so
+it scales with the window) and a minimum window size. `note.css` gives each
+shape a safe area in container-query units; the header, editor and toolbar
+live inside it and the paper is clipped behind them. The shadow is a
+`drop-shadow` filter so it follows the outline. Picking a shape whose safe
+area would be too small grows the window to that shape's minimum.
 
 Edits save through `update_note` debounced at 150 ms. The store's own write
 debounce (300 ms) coalesces further.
@@ -148,6 +160,7 @@ debounce (300 ms) coalesces further.
     {
       "id": "k3v9x2mq1a",
       "color": "butter",
+      "shape": "square",
       "content": "Groceries\n- [x] oat milk\n- [ ] eggs",
       "pinned": true,
       "open": true,
@@ -175,7 +188,7 @@ Commands (frontend → Rust):
 | `list_notes`      |                                      | notes + settings snapshot                       |
 | `get_note`        | id                                   | one note                                        |
 | `create_note`     |                                      | new note in the next colour, opened, returns it |
-| `update_note`     | id, content?, color?                 | persist edits, bump `updatedAt`                 |
+| `update_note`     | id, content?, color?, shape?         | persist edits, bump `updatedAt`                 |
 | `delete_note`     | id                                   | remove, close its window                        |
 | `open_note`       | id                                   | create or focus its window                      |
 | `close_note`      | id                                   | mark closed, close its window                   |

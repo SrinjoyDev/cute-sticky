@@ -18,7 +18,8 @@
 - **Stays out of the way.** All you see is a slim vertical tab of coloured dots, one per note, pinned to the right edge above every window. It never shows in the taskbar.
 - **Hover to browse.** Rest the pointer on the tab and your notes deal out beside it as a pile of small cards. Hover a card and it slides out to peek while the cards below make room. Move away and they fold back.
 - **Click to float.** A card, or a dot on the tab, opens the note as its own frameless window: drag it by the top edge, resize from the corner, pin or unpin it. It remembers where you left it and comes back there after a restart.
-- **Write like paper.** Plain text with bullets and checkboxes. Type `- ` for a bullet and `[] ` for a checkbox; Enter continues the list, Backspace on an empty item leaves it. Select some text and a small pill offers bold, italic, underline and strikethrough (or Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Shift+S). Six pastel colours. Everything saves as you type.
+- **Write like paper.** Plain text with bullets and checkboxes. A slim toolbar along the bottom of a note (shown while you're in it) toggles bullets, checklists, bold, italic, underline and strikethrough; or type `- ` or `[] ` at the start of a line and use Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Shift+S. Six pastel colours. Everything saves as you type.
+- **Any shape you like.** Square, circle, cloud, heart or speech bubble, from the shape button next to the colour dot. The paper is clipped to the shape and scales when you resize the note.
 - **No dialogs.** Delete asks once, inline: the trash icon turns into "Delete?" for three seconds.
 - **Always there.** Starts with Windows by default (switch it off from the tray) and keeps running while notes open and close.
 - **Lightweight.** A 4.5 MB Rust executable around WebView2 and about 30 KB of JavaScript. Around 40 MB of memory while idle.
@@ -27,6 +28,10 @@
   <img src="docs/screenshots/peek.png" width="290" alt="The pile with one card slid out to peek">
   &nbsp;&nbsp;
   <img src="docs/screenshots/note.png" width="450" alt="A floating note with a checklist">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/shapes.png" width="820" alt="The same note as a square, circle, cloud, heart and speech bubble">
 </p>
 
 ## Install
@@ -59,7 +64,7 @@ Three kinds of window, all frameless and transparent, drawn with CSS:
 | `pile`      | Created hidden. Rust sizes it to the note count, places it beside the tab, and shows it when the hover state machine says so. The page deals the cards in with a stagger and folds them back before the window hides. |
 | `note-<id>` | One per open note, created on demand at its saved rectangle. Always on top while pinned.                                                                                                                              |
 
-Notes are stored as readable text, one line per block, with `- ` bullets, `- [ ]` checkboxes and inline `**bold**`, `*italic*`, `__underline__` and `~~strike~~`. The editor is one editable area with non-editable list markers inside it, so selection, copy and multi-line delete are the browser's own; Enter, Backspace at a line start, paste and the list shortcuts go through the pure model.
+Notes are stored as readable text, one line per block, with `- ` bullets, `- [ ]` checkboxes and inline `**bold**`, `*italic*`, `__underline__` and `~~strike~~`. The editor is one editable area with non-editable list markers inside it, so selection, copy and multi-line delete are the browser's own; Enter, Backspace at a line start, paste and the list shortcuts go through the pure model. Shapes are CSS clip paths in unit coordinates, so they scale with the window, and each shape declares a safe area that the header, text and toolbar stay inside.
 
 Rust owns the state. Notes and settings live in one JSON file (`%APPDATA%\com.srinjoy.cutesticky\notes.json`) written atomically and debounced; a file that fails to parse is moved aside rather than overwritten. Every mutation broadcasts a `notes-changed` event so all windows stay in sync.
 

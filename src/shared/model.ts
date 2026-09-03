@@ -6,8 +6,12 @@
  *   - [ ] task
  *   - [x] done task
  *
+ * A block's `text` may carry inline markup (see `inline.ts`). Offsets passed to
+ * the edit operations count plain characters, the way a caret sees them.
  * Every function here is pure so it can be tested without a DOM.
  */
+
+import { parseInline, plainText, serializeInline, splitRuns } from './inline';
 
 export type BlockType = 'p' | 'bullet' | 'check';
 
@@ -48,12 +52,13 @@ function marker(b: Block): string {
   return '';
 }
 
-/** Up to `count` non-empty lines with their markers, for cards and tooltips. */
+/** Up to `count` non-empty lines as plain words with their markers, for cards and tooltips. */
 export function previewLines(blocks: Block[], count: number): string[] {
   return blocks
-    .filter((b) => b.text.trim())
+    .map((b) => ({ b, plain: plainText(b.text).trim() }))
+    .filter(({ plain }) => plain)
     .slice(0, count)
-    .map((b) => marker(b) + b.text.trim());
+    .map(({ b, plain }) => marker(b) + plain);
 }
 
 export function firstLine(text: string): string {
@@ -78,7 +83,7 @@ export function applyShortcut(b: Block): Block | null {
   return null;
 }
 
-/** Enter: split block `i` at `offset`. An empty list item leaves the list instead. */
+/** Enter: split block `i` at a plain-text `offset`. An empty list item leaves the list instead. */
 export function splitAt(
   blocks: Block[],
   i: number,
@@ -86,12 +91,13 @@ export function splitAt(
 ): { blocks: Block[]; focus: number } {
   const cur = blocks[i];
   const out = blocks.slice();
-  if (cur.type !== 'p' && cur.text.trim() === '') {
+  if (cur.type !== 'p' && plainText(cur.text).trim() === '') {
     out[i] = { type: 'p', text: '', done: false };
     return { blocks: out, focus: i };
   }
-  out[i] = { ...cur, text: cur.text.slice(0, offset) };
-  out.splice(i + 1, 0, { type: cur.type, text: cur.text.slice(offset), done: false });
+  const [head, tail] = splitRuns(parseInline(cur.text), offset);
+  out[i] = { ...cur, text: serializeInline(head) };
+  out.splice(i + 1, 0, { type: cur.type, text: serializeInline(tail), done: false });
   return { blocks: out, focus: i + 1 };
 }
 
@@ -108,9 +114,27 @@ export function backspaceAtStart(
   }
   if (i === 0) return { blocks: out, focus: 0, caret: 0 };
   const prev = blocks[i - 1];
-  out[i - 1] = { ...prev, text: prev.text + cur.text };
+  out[i - 1] = { ...prev, text: joinText(prev.text, cur.text) };
   out.splice(i, 1);
-  return { blocks: out, focus: i - 1, caret: prev.text.length };
+  return { blocks: out, focus: i - 1, caret: plainText(prev.text).length };
+}
+
+/** Delete at the end of block `i`: pulls the next block's text up into it. */
+export function deleteAtEnd(
+  blocks: Block[],
+  i: number,
+): { blocks: Block[]; focus: number; caret: number } {
+  const out = blocks.slice();
+  const caret = plainText(blocks[i].text).length;
+  if (i >= blocks.length - 1) return { blocks: out, focus: i, caret };
+  out[i] = { ...blocks[i], text: joinText(blocks[i].text, blocks[i + 1].text) };
+  out.splice(i + 1, 1);
+  return { blocks: out, focus: i, caret };
+}
+
+/** Joins two markup strings through runs so styles stay well formed. */
+function joinText(a: string, b: string): string {
+  return serializeInline([...parseInline(a), ...parseInline(b)]);
 }
 
 export function toggleDone(blocks: Block[], i: number): Block[] {

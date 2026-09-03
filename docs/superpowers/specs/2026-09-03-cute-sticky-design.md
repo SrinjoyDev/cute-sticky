@@ -90,28 +90,48 @@ converts with the monitor scale factor.
 
 ## Editor
 
-Content is stored as text, one block per line:
+Content is stored as text, one block per line, with inline markup inside a line:
 
 ```
-plain line
+plain line with **bold**, *italic*, __underline__ and ~~strike~~
 - bullet
 - [ ] task
 - [x] done task
 ```
 
-`src/shared/model.ts` is the pure core: `parse(text) → Block[]`,
-`serialize(blocks) → text`, and edit operations (`splitAt`, `backspaceAtStart`,
-`applyShortcut`, `toggleDone`). The DOM layer renders one row per block with a
-marker (none, dot, or checkbox) and a `contenteditable="plaintext-only"` text
-span, and maps keys to model operations:
+`src/shared/inline.ts` turns a line's markup into runs (stretches of text
+sharing one style) and back. Literal `*`, `~~` and paired `_` are escaped
+with a backslash; unbalanced markers are read as plain text, so notes written
+before formatting existed keep their meaning. `src/shared/model.ts` is the
+pure block layer: `parse`, `serialize`, `previewLines` (plain words for cards
+and tooltips) and the edit operations `splitAt`, `backspaceAtStart`,
+`deleteAtEnd`, `applyShortcut`, `toggleDone`, all taking plain-text offsets.
 
-- Enter splits the block; an empty list item turns back into a plain line.
-- Backspace at the start of a list item makes it plain; at the start of a
-  plain line it merges into the previous block.
-- Typing `- ` or `* ` at the start of a plain line makes a bullet; `[] `,
-  `[ ] ` or `[x] ` makes a checkbox (checked for `x`).
-- Arrow up/down move between blocks when the caret is on the first/last line.
-- Clicking a checkbox toggles it. Done items render struck through and muted.
+The DOM layer (`src/note/editor.ts`) is one `contenteditable` root holding one
+row per block: a non-editable marker (nothing, a dot, or a checkbox button)
+and a text span with `<b>`, `<i>`, `<u>`, `<s>`. Because there is a single
+editable area, Ctrl+A, drag-select, copy, cut and deleting a selection that
+spans lines are the browser's own behaviour. The editor intercepts:
+
+- Enter (and Shift+Enter) → `splitAt`; an empty list item turns back into a
+  plain line.
+- Backspace at the start of a line → `backspaceAtStart`; Delete at the end of
+  a line → `deleteAtEnd`.
+- Paste → plain text only; one line is inserted natively, several lines become
+  one block per line (a `- ` or `- [ ]` prefix on a pasted line is honoured,
+  the rest of the line is kept literal).
+- Typing `- `, `* `, `[] `, `[ ] ` or `[x] ` at the start of a line converts it.
+- Ctrl+B / Ctrl+I / Ctrl+U / Ctrl+Shift+S toggle inline styles through
+  `document.execCommand`, as does the selection pill.
+
+After every input the model is re-read from the DOM; if the browser left a
+shape the editor does not render (stray nodes, nested rows, a newline in a
+text node) the rows are rebuilt from the model and the caret restored.
+
+The selection pill (`src/note/toolbar.ts`) appears above any non-empty
+selection inside the editor with B, I, U and S buttons whose active state
+mirrors `queryCommandState`, and hides when the selection collapses or leaves
+the editor.
 
 Edits save through `update_note` debounced at 150 ms. The store's own write
 debounce (300 ms) coalesces further.

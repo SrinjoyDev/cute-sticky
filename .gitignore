@@ -22,3 +22,4 @@ desktop.ini
 
 # raw desktop captures used to produce the README crops
 docs/screenshots/raw-*.png
+dev/dist

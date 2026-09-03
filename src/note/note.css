@@ -238,3 +238,77 @@ body.closing .note {
     radial-gradient(circle, rgba(59, 53, 71, 0.35) 1px, transparent 1.5px) 9px 1px / 4px 4px
       no-repeat;
 }
+
+/* Inline formatting */
+.tx b {
+  font-weight: 800;
+}
+.tx i {
+  font-style: italic;
+}
+.tx u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tx s {
+  text-decoration: line-through;
+}
+.blk.done .tx s,
+.blk.done .tx u {
+  text-decoration: line-through;
+}
+
+/* Selection toolbar: a small pill just above whatever is selected */
+.fmt {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: #2b2636;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(59, 53, 71, 0.32);
+  transform: translateY(4px) scale(0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.16s var(--spring),
+    opacity 0.12s,
+    visibility 0s linear 0.16s;
+}
+.fmt.on {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.fmt button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  font: 800 13px/1 var(--app);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.fmt button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.fmt button.on {
+  background: rgba(255, 255, 255, 0.26);
+}
+.fmt .i {
+  font-style: italic;
+  font-weight: 700;
+}
+.fmt .u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.fmt .s {
+  text-decoration: line-through;
+}

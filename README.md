@@ -18,7 +18,7 @@
 - **Stays out of the way.** All you see is a slim vertical tab of coloured dots, one per note, pinned to the right edge above every window. It never shows in the taskbar.
 - **Hover to browse.** Rest the pointer on the tab and your notes deal out beside it as a pile of small cards. Hover a card and it slides out to peek while the cards below make room. Move away and they fold back.
 - **Click to float.** A card, or a dot on the tab, opens the note as its own frameless window: drag it by the top edge, resize from the corner, pin or unpin it. It remembers where you left it and comes back there after a restart.
-- **Write like paper.** Plain text with bullets and checkboxes. Type `- ` for a bullet and `[] ` for a checkbox; Enter continues the list, Backspace on an empty item leaves it. Six pastel colours. Everything saves as you type.
+- **Write like paper.** Plain text with bullets and checkboxes. Type `- ` for a bullet and `[] ` for a checkbox; Enter continues the list, Backspace on an empty item leaves it. Select some text and a small pill offers bold, italic, underline and strikethrough (or Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Shift+S). Six pastel colours. Everything saves as you type.
 - **No dialogs.** Delete asks once, inline: the trash icon turns into "Delete?" for three seconds.
 - **Always there.** Starts with Windows by default (switch it off from the tray) and keeps running while notes open and close.
 - **Lightweight.** A 4.5 MB Rust executable around WebView2 and about 30 KB of JavaScript. Around 40 MB of memory while idle.
@@ -58,6 +58,8 @@ Three kinds of window, all frameless and transparent, drawn with CSS:
 | `tab`       | The 22 px strip of dots. Never takes focus. Reports hover to Rust; click a dot to open, drag to move.                                                                                                                 |
 | `pile`      | Created hidden. Rust sizes it to the note count, places it beside the tab, and shows it when the hover state machine says so. The page deals the cards in with a stagger and folds them back before the window hides. |
 | `note-<id>` | One per open note, created on demand at its saved rectangle. Always on top while pinned.                                                                                                                              |
+
+Notes are stored as readable text, one line per block, with `- ` bullets, `- [ ]` checkboxes and inline `**bold**`, `*italic*`, `__underline__` and `~~strike~~`. The editor is one editable area with non-editable list markers inside it, so selection, copy and multi-line delete are the browser's own; Enter, Backspace at a line start, paste and the list shortcuts go through the pure model.
 
 Rust owns the state. Notes and settings live in one JSON file (`%APPDATA%\com.srinjoy.cutesticky\notes.json`) written atomically and debounced; a file that fails to parse is moved aside rather than overwritten. Every mutation broadcasts a `notes-changed` event so all windows stay in sync.
 

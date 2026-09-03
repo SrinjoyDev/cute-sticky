@@ -9,12 +9,13 @@ import './note.css';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 import { COLORS, colorHex } from '../shared/colors';
-import { $$, debounce, installPageDefaults } from '../shared/dom';
+import { $$, debounce, installPageDefaults, reportError } from '../shared/dom';
 import { ICON } from '../shared/icons';
 import { ipc, onNotesChanged } from '../shared/ipc';
 import { parse, serialize, type Block } from '../shared/model';
 import type { Color, Note } from '../shared/types';
 import { createEditor } from './editor';
+import { createToolbar } from './toolbar';
 
 const SAVE_MS = 150;
 const CLOSE_MS = 160;
@@ -67,9 +68,10 @@ async function main(): Promise<void> {
   let closing = false;
 
   const save = debounce((blocks: Block[]) => {
-    void ipc.updateNote(id, { content: serialize(blocks) });
+    ipc.updateNote(id, { content: serialize(blocks) }).catch((err) => reportError(`save failed: ${String(err)}`));
   }, SAVE_MS);
   const editor = createEditor(body, parse(note.content), save);
+  createToolbar(el, body, editor);
 
   // Header: drag, colour, pin, delete, close.
   el.querySelector<HTMLElement>('.grip')!.addEventListener('mousedown', (ev) => {

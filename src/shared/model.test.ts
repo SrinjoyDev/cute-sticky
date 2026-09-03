@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyShortcut,
   backspaceAtStart,
+  deleteAtEnd,
   firstLine,
   parse,
   previewLines,
@@ -110,5 +111,32 @@ describe('toggleDone', () => {
   it('flips a checkbox and leaves others alone', () => {
     expect(toggleDone([c('a'), c('b')], 1)).toEqual([c('a'), c('b', true)]);
     expect(toggleDone([p('x')], 0)).toEqual([p('x')]);
+  });
+});
+
+describe('formatting-aware operations', () => {
+  it('splitAt counts plain characters and keeps styles on both sides', () => {
+    const r = splitAt([{ type: 'p', text: '**bold text**', done: false }], 0, 4);
+    expect(r.blocks).toEqual([p('**bold**'), p('** text**')]);
+  });
+
+  it('backspaceAtStart merges formatted text and reports the plain caret', () => {
+    const r = backspaceAtStart([b('**ab**'), p('*cd*')], 1);
+    expect(r.blocks).toEqual([b('**ab***cd*')]);
+    expect(r).toMatchObject({ focus: 0, caret: 2 });
+  });
+
+  it('deleteAtEnd pulls the next block up', () => {
+    const r = deleteAtEnd([p('ab'), c('cd')], 0);
+    expect(r.blocks).toEqual([p('abcd')]);
+    expect(r).toMatchObject({ focus: 0, caret: 2 });
+    expect(deleteAtEnd([p('ab')], 0).blocks).toEqual([p('ab')]);
+  });
+
+  it('previewLines strips inline markup', () => {
+    expect(previewLines([p('**Groceries** for *tonight*'), c('~~milk~~', true)], 3)).toEqual([
+      'Groceries for tonight',
+      '☑ milk',
+    ]);
   });
 });

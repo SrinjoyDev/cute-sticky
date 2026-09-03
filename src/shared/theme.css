@@ -122,3 +122,19 @@ button {
     transition-duration: 0.001s !important;
   }
 }
+
+/* Development only: uncaught errors rendered by installPageDefaults. */
+.dev-error {
+  position: fixed;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  z-index: 99;
+  margin: 0;
+  padding: 6px 8px;
+  background: #b3261e;
+  color: #fff;
+  font: 11px/1.3 monospace;
+  white-space: pre-wrap;
+  border-radius: 6px;
+}

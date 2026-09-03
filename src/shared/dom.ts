@@ -55,9 +55,22 @@ export function debounce<A extends unknown[]>(fn: (...args: A) => void, ms: numb
 }
 
 /** Behaviours every window wants: no browser context menu in production, no image dragging. */
+/** Logs an error; development builds also render it on the page so a screenshot can catch it. */
+export function reportError(message: string): void {
+  console.error(message);
+  if (!import.meta.env.DEV) return;
+  const box = document.createElement('pre');
+  box.className = 'dev-error';
+  box.textContent = message;
+  document.body.appendChild(box);
+}
+
 export function installPageDefaults(): void {
   if (!import.meta.env.DEV) {
     document.addEventListener('contextmenu', (e) => e.preventDefault());
+  } else {
+    window.addEventListener('error', (e) => reportError(`${e.message}\n${e.error?.stack ?? ''}`));
+    window.addEventListener('unhandledrejection', (e) => reportError(`unhandled: ${String(e.reason)}`));
   }
   document.addEventListener('dragstart', (e) => e.preventDefault());
 }

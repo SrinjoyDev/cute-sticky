@@ -1,0 +1,961 @@
+<title>Cute Sticky</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<style>
+  :root {
+    --ink: #3B3547;
+    --ink-2: #6E6880;
+    --ink-3: #9A94A8;
+    --paper: #FBF8F6;
+    --accent: #7B5BCF;
+    --accent-soft: rgba(123, 91, 207, .14);
+    --danger: #E2607F;
+    --butter: #FFE9A8;
+    --peach: #FFD3C2;
+    --mint: #CFEFDD;
+    --sky: #CDE6FA;
+    --lilac: #E3D7F7;
+    --rose: #FBD5E3;
+    --strip: #2B2636;
+    --strip-ink: #F3EEF9;
+    --strip-muted: #A99FC0;
+    --win-bg: #FFFFFF;
+    --win-border: #DCDAE3;
+    --win-chrome: #F7F7FA;
+    --taskbar: rgba(243, 243, 247, .88);
+    --ui: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --app: "Nunito", "Segoe UI", system-ui, sans-serif;
+    --shadow-note: 0 14px 34px rgba(59, 53, 71, .20), 0 2px 6px rgba(59, 53, 71, .10);
+    --spring: cubic-bezier(.34, 1.35, .64, 1);
+    --ease: cubic-bezier(.2, .7, .2, 1);
+    --taskbar-h: 48px;
+    --card-w: 170px;
+    --card-h: 110px;
+    --peek: 18px;
+  }
+
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--strip); color: var(--ink); font-family: var(--ui); overflow: hidden; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+
+  /* ---------- storyboard strip ---------- */
+  #strip {
+    background: var(--strip); color: var(--strip-ink); padding: 12px 20px 13px;
+    display: grid; grid-template-columns: auto 1fr; gap: 8px 22px; align-items: center;
+    font-family: var(--app); border-bottom: 1px solid rgba(255, 255, 255, .06);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .name { font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+  .brand .sub { color: var(--strip-muted); font-size: 13px; font-weight: 600; }
+  .glyph {
+    display: inline-block; width: 18px; height: 18px; border-radius: 5px; background: var(--butter);
+    position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(59, 53, 71, .12);
+  }
+  .glyph::after { content: ""; position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px; background: #E9C96A; transform: rotate(45deg); }
+  .glyph.sm { width: 15px; height: 15px; border-radius: 4px; }
+  #stages { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    appearance: none; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .06);
+    color: var(--strip-ink); border-radius: 999px; padding: 5px 11px 5px 6px;
+    font: 600 13px/1 var(--app); display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+    transition: background .15s;
+  }
+  .chip b { display: inline-grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: rgba(255, 255, 255, .12); font-weight: 800; font-size: 11px; }
+  .chip:hover { background: rgba(255, 255, 255, .12); }
+  .chip.on { background: var(--butter); color: var(--ink); border-color: transparent; }
+  .chip.on b { background: rgba(59, 53, 71, .14); }
+  .chip.free { padding-left: 11px; border-style: dashed; }
+  .chip.free.on { background: var(--lilac); }
+  #caption { grid-column: 1 / -1; margin: 0; font: 400 14px/1.45 var(--app); color: var(--strip-ink); max-width: 96ch; }
+  #caption strong { font-weight: 800; }
+  #caption kbd { font: 700 12px/1 var(--app); background: rgba(255, 255, 255, .12); padding: 3px 6px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, .12); }
+
+  /* ---------- desktop ---------- */
+  #stage-wrap { overflow: auto; background: #1d1926; }
+  #desktop { position: relative; min-width: 1080px; height: 100%; min-height: 620px; overflow: hidden; font-family: var(--ui); user-select: none; }
+  .wallpaper {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(60% 80% at 72% 28%, rgba(191, 217, 250, .95) 0%, rgba(191, 217, 250, 0) 60%),
+      radial-gradient(50% 60% at 22% 78%, rgba(201, 189, 242, .9) 0%, rgba(201, 189, 242, 0) 60%),
+      radial-gradient(40% 50% at 82% 88%, rgba(255, 216, 230, .9) 0%, rgba(255, 216, 230, 0) 60%),
+      linear-gradient(160deg, #7FB0F0 0%, #9DC3F5 40%, #DCE7F8 100%);
+  }
+  .bloom {
+    position: absolute; left: 30%; top: 8%; width: 46%; height: 70%;
+    border-radius: 48% 52% 40% 60% / 60% 40% 60% 40%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, .05));
+    filter: blur(28px); transform: rotate(-14deg);
+  }
+  #layer-normal { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+  #layer-top { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+  #layer-normal > *, #layer-top > * { pointer-events: auto; }
+
+  /* fake editor window */
+  .fakewin {
+    position: absolute; left: 4%; top: 7%; width: 58%; bottom: calc(var(--taskbar-h) + 5%);
+    background: var(--win-bg); border: 1px solid var(--win-border); border-radius: 8px;
+    box-shadow: 0 18px 40px rgba(20, 16, 40, .22); overflow: hidden; display: grid; grid-template-rows: 38px 1fr;
+  }
+  .fw-title { display: flex; align-items: center; padding-left: 14px; gap: 10px; font-size: 12.5px; color: #4a4658; background: var(--win-chrome); border-bottom: 1px solid #EEEDF2; }
+  .fw-title .doc { width: 14px; height: 14px; border-radius: 3px; background: #7B5BCF; opacity: .8; }
+  .fw-title .ctl { margin-left: auto; display: flex; }
+  .ctl span { width: 46px; height: 38px; display: grid; place-items: center; font-size: 12px; color: #5b5868; }
+  .ctl span:last-child:hover { background: #E81123; color: #fff; }
+  .fw-body { display: grid; grid-template-columns: 190px 1fr 14px; min-height: 0; }
+  .fw-side { background: #F3F3F7; padding: 14px 12px; border-right: 1px solid #EEEDF2; font-size: 12.5px; color: #5b5868; }
+  .fw-side div { padding: 6px 8px; border-radius: 5px; }
+  .fw-side div.cur { background: #E6E4F2; color: var(--ink); }
+  .fw-main { padding: 26px 32px; color: #6b6880; font-size: 13.5px; line-height: 1.7; }
+  .fw-main h3 { margin: 0 0 8px; font-size: 20px; color: var(--ink); font-weight: 600; }
+  .fw-main p { margin: 0; }
+  .fw-main .cursor { display: inline-block; width: 1px; height: 16px; background: var(--ink); vertical-align: -3px; animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .fw-scroll { background: #F3F3F7; position: relative; }
+  .fw-scroll::after { content: ""; position: absolute; left: 4px; right: 4px; top: 24px; height: 120px; border-radius: 3px; background: #C9C7D3; }
+
+  /* ---------- dock: vertical tab + card stack ---------- */
+  #dock {
+    position: absolute; right: 0; top: 200px; z-index: 40;
+    display: flex; align-items: flex-start; gap: 8px; pointer-events: none; font-family: var(--app);
+  }
+  #dock.open { pointer-events: auto; }
+  #dock.hidden { display: none; }
+  #tab {
+    pointer-events: auto; width: 22px; padding: 8px 0; min-height: 26px; flex: none;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    background: rgba(251, 248, 246, .92); backdrop-filter: blur(16px);
+    border-radius: 11px 0 0 11px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(59, 53, 71, .18), inset 0 0 0 1px rgba(255, 255, 255, .6);
+    transition: transform .2s var(--spring);
+  }
+  #tab:hover, .open #tab { transform: translateX(-2px); }
+  #dock.dragging #tab { cursor: grabbing; }
+  .dot {
+    appearance: none; border: 0; padding: 0; width: 8px; height: 8px; border-radius: 50%;
+    position: relative; cursor: pointer; flex: none; box-shadow: inset 0 0 0 1px rgba(59, 53, 71, .14);
+    transition: transform .2s var(--spring); animation: dotIn .3s var(--spring);
+  }
+  @keyframes dotIn { from { transform: scale(0); } }
+  #tab:hover .dot { transform: scale(1.18); }
+  .dot:hover { transform: scale(1.45) !important; }
+  .dot.on::after { content: ""; position: absolute; inset: 2.5px; border-radius: 50%; background: #fff; }
+  .dot.empty { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+  .more { font: 800 9px/1 var(--app); color: var(--ink-2); }
+
+  #fan {
+    position: relative; width: calc(var(--card-w) + var(--peek) + 4px); height: 0;
+    visibility: hidden; pointer-events: none; transition: visibility 0s linear .36s;
+  }
+  .open #fan { visibility: visible; pointer-events: auto; transition-delay: 0s; }
+  .fc {
+    position: absolute; right: 0; top: var(--t); width: var(--card-w); height: var(--card-h);
+    z-index: var(--z); border-radius: 10px; padding: 8px 10px 8px 11px; cursor: pointer; overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0) 45%), var(--paper);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55), 0 -1px 0 rgba(59, 53, 71, .04), 0 8px 22px rgba(59, 53, 71, .18), 0 1px 3px rgba(59, 53, 71, .1);
+    transform: rotate(var(--rot)); opacity: 1; color: var(--ink);
+    transition: top .32s var(--spring), transform .26s var(--spring), opacity .18s ease, box-shadow .2s;
+  }
+  .fc:hover, .fc:focus-visible, .fc.peek {
+    transform: translateX(calc(-1 * var(--peek))) rotate(0deg) scale(1.03); z-index: 100;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55), 0 18px 34px rgba(59, 53, 71, .26), 0 2px 6px rgba(59, 53, 71, .12);
+    transition-delay: 0s;
+  }
+  .fc:hover ~ .fc, .fc.peek ~ .fc { transform: translateY(var(--push)) rotate(var(--rot)); transition-delay: 0s; }
+  .fc:hover ~ .ghost, .fc.peek ~ .ghost { transform: translateY(var(--push)); transition-delay: 0s; }
+  #fan.stack .fc { top: var(--t0); opacity: 0; transform: translateX(26px) rotate(0deg) scale(.92); }
+  .fc-top { display: flex; align-items: center; gap: 6px; height: 20px; padding-right: 22px; }
+  .fc-l1 { flex: 1; min-width: 0; font-weight: 800; font-size: 12px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fc-l1.mute { color: var(--ink-3); font-weight: 600; font-style: italic; }
+  .fc-ln { font-size: 11px; line-height: 1.35; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .fc-foot { position: absolute; left: 11px; right: 10px; bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .ago { font: 700 10px/1 var(--app); color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .openmark { flex: none; font: 800 9px/1 var(--app); color: var(--accent); background: rgba(255, 255, 255, .65); padding: 3px 6px; border-radius: 999px; display: none; }
+  .fc.is-open .openmark { display: inline-block; }
+  .fc .del { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; opacity: 0; }
+  .fc:hover .del, .fc .del.armed, .fc .del:focus-visible { opacity: .75; }
+  .fc .del:hover { opacity: 1; }
+  .ghost {
+    position: absolute; right: 0; top: var(--t); width: var(--card-w); height: 34px; z-index: 0;
+    border-radius: 10px; border: 1.5px dashed rgba(59, 53, 71, .32); background: rgba(251, 248, 246, .6);
+    display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--ink-2); cursor: pointer;
+    font: 800 12px/1 var(--app);
+    transition: top .32s var(--spring), transform .26s var(--spring), border-color .15s, color .15s, background .15s, opacity .18s ease;
+  }
+  .ghost svg { width: 14px; height: 14px; }
+  .ghost:hover { border-color: var(--accent); color: var(--accent); background: rgba(227, 215, 247, .85); }
+  #fan.stack .ghost { top: var(--t0); opacity: 0; transform: translateX(26px) scale(.92); }
+
+  /* icon buttons (shared) */
+  .ic {
+    appearance: none; border: 0; background: transparent; width: 26px; height: 26px; border-radius: 8px;
+    display: grid; place-items: center; cursor: pointer; color: var(--ink); opacity: .55;
+    transition: opacity .15s, background .15s, transform .15s var(--spring);
+  }
+  .ic:hover { opacity: 1; background: rgba(59, 53, 71, .10); }
+  .ic:active { transform: scale(.92); }
+  .ic svg { width: 14px; height: 14px; }
+  .ic.pin.on { opacity: 1; color: var(--accent); }
+  .ic.pin.on svg { transform: rotate(-12deg); }
+  .ic.trash.armed { opacity: 1; width: auto; padding: 0 9px; background: var(--danger); color: #fff; font: 800 11px/1 var(--app); border-radius: 999px; }
+  .ic.trash.armed svg { display: none; }
+  .ic.trash.armed::after { content: "Delete?"; }
+
+  /* ---------- floating notes ---------- */
+  .note {
+    position: absolute; display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .38), rgba(255, 255, 255, 0) 42%), var(--paper);
+    border-radius: 14px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55), var(--shadow-note);
+    font-family: var(--app); color: var(--ink); transform-origin: top right; transition: background-color .25s;
+  }
+  .note.dragging { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55), 0 24px 48px rgba(59, 53, 71, .26), 0 3px 8px rgba(59, 53, 71, .12); }
+  @keyframes noteIn { from { transform: scale(.9) translateY(6px); opacity: 0; } }
+  .note.opening { animation: noteIn .26s var(--spring); }
+  @keyframes noteOut { to { transform: scale(.92); opacity: 0; } }
+  .note.closing { animation: noteOut .16s ease-in forwards; pointer-events: none; }
+  .nh { height: 34px; display: flex; align-items: center; padding: 0 6px 0 10px; gap: 6px; flex: none; }
+  .sw {
+    appearance: none; border: 0; width: 14px; height: 14px; border-radius: 50%; padding: 0; cursor: pointer;
+    background: var(--paper); box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(59, 53, 71, .15); transition: transform .18s var(--spring);
+  }
+  .sw:hover { transform: scale(1.15); }
+  .grip { flex: 1; height: 100%; cursor: grab; }
+  .note.dragging .grip { cursor: grabbing; }
+  .acts { display: flex; gap: 2px; }
+  .nb { flex: 1; overflow: auto; padding: 2px 12px 12px 12px; font-size: 15px; line-height: 1.45; }
+  .blk { display: flex; align-items: flex-start; gap: 7px; padding: 1px 0; }
+  .mk { flex: none; width: 18px; height: 22px; display: grid; place-items: center; color: var(--ink-2); }
+  .blk.p .mk { display: none; }
+  .blk.bullet .mk::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--ink-2); }
+  .cb {
+    appearance: none; border: 1.5px solid rgba(59, 53, 71, .45); background: rgba(255, 255, 255, .5);
+    width: 15px; height: 15px; border-radius: 4.5px; cursor: pointer; padding: 0; display: grid; place-items: center;
+    transition: background .15s, border-color .15s, transform .15s var(--spring);
+  }
+  .cb:hover { transform: scale(1.1); }
+  .cb svg { width: 10px; height: 10px; opacity: 0; transition: opacity .12s; }
+  .blk.done .cb { background: var(--ink); border-color: var(--ink); }
+  .blk.done .cb svg { opacity: 1; }
+  .tx { flex: 1; min-width: 0; outline: none; user-select: text; word-break: break-word; min-height: 22px; }
+  .blk.done .tx { color: var(--ink-3); text-decoration: line-through; }
+  .blk:only-child .tx:empty::before { content: "Write something…"; color: var(--ink-3); pointer-events: none; }
+  .rs {
+    position: absolute; right: 3px; bottom: 3px; width: 16px; height: 16px; cursor: nwse-resize; opacity: .7;
+    background:
+      radial-gradient(circle, rgba(59, 53, 71, .35) 1px, transparent 1.5px) 9px 9px / 4px 4px no-repeat,
+      radial-gradient(circle, rgba(59, 53, 71, .35) 1px, transparent 1.5px) 5px 9px / 4px 4px no-repeat,
+      radial-gradient(circle, rgba(59, 53, 71, .35) 1px, transparent 1.5px) 9px 5px / 4px 4px no-repeat,
+      radial-gradient(circle, rgba(59, 53, 71, .35) 1px, transparent 1.5px) 1px 9px / 4px 4px no-repeat,
+      radial-gradient(circle, rgba(59, 53, 71, .35) 1px, transparent 1.5px) 5px 5px / 4px 4px no-repeat,
+      radial-gradient(circle, rgba(59, 53, 71, .35) 1px, transparent 1.5px) 9px 1px / 4px 4px no-repeat;
+  }
+  .sws {
+    position: absolute; left: 6px; top: 32px; display: flex; gap: 6px; padding: 6px; z-index: 2;
+    background: rgba(255, 255, 255, .92); border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(59, 53, 71, .2), inset 0 0 0 1px rgba(59, 53, 71, .06);
+    transform-origin: top left; transform: scale(.7); opacity: 0; visibility: hidden;
+    transition: transform .18s var(--spring), opacity .12s, visibility 0s linear .18s;
+  }
+  .sws.open { transform: none; opacity: 1; visibility: visible; transition-delay: 0s; }
+  .swo { appearance: none; border: 0; width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(59, 53, 71, .14); transition: transform .15s var(--spring); }
+  .swo:hover { transform: scale(1.2); }
+  .swo.on { box-shadow: inset 0 0 0 1px rgba(59, 53, 71, .14), 0 0 0 2px #fff, 0 0 0 3.5px var(--ink); }
+
+  /* ---------- taskbar ---------- */
+  #taskbar {
+    position: absolute; left: 0; right: 0; bottom: 0; height: var(--taskbar-h); z-index: 50;
+    background: var(--taskbar); backdrop-filter: blur(30px) saturate(1.4); border-top: 1px solid rgba(255, 255, 255, .6);
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  }
+  .tb-center { grid-column: 2; display: flex; gap: 4px; }
+  .tb-btn { appearance: none; border: 0; background: transparent; width: 40px; height: 40px; border-radius: 6px; display: grid; place-items: center; cursor: pointer; position: relative; transition: background .12s; }
+  .tb-btn:hover { background: rgba(0, 0, 0, .06); }
+  .tb-btn.active::after { content: ""; position: absolute; bottom: 2px; left: 14px; right: 14px; height: 3px; border-radius: 2px; background: #6B6880; }
+  .start { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 16px; height: 16px; }
+  .start i { background: #0A78D6; border-radius: 1px; }
+  .folder { width: 18px; height: 14px; border-radius: 2px 3px 3px 3px; background: #F5C542; position: relative; }
+  .folder::before { content: ""; position: absolute; left: 0; top: -3px; width: 8px; height: 4px; background: #E3AE2B; border-radius: 2px 2px 0 0; }
+  .edge { width: 18px; height: 18px; border-radius: 50%; background: conic-gradient(from 200deg, #2AB4A5, #0D7CDA, #2AB4A5); }
+  .term { width: 18px; height: 16px; border-radius: 3px; background: #2E2A38; color: #fff; font: 700 9px/16px monospace; text-align: center; }
+  .tv { width: 18px; height: 14px; border: 1.6px solid #4a4658; border-radius: 2px; position: relative; }
+  .tv::after { content: ""; position: absolute; right: -6px; top: 3px; width: 8px; height: 8px; border: 1.6px solid #4a4658; border-left: 0; border-top: 0; border-radius: 0 0 2px 0; }
+  .tb-btn svg { width: 18px; height: 18px; }
+  #launcher { animation: launcherIn .35s var(--spring); }
+  @keyframes launcherIn { from { transform: scale(.6); opacity: 0; } }
+  #launcher .tip {
+    position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+    background: #2B2636; color: #fff; font: 600 12px/1 var(--app); padding: 7px 10px; border-radius: 7px; box-shadow: 0 6px 16px rgba(0, 0, 0, .25);
+  }
+  #launcher .tip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border: 5px solid transparent; border-top-color: #2B2636; }
+  .tb-right { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 2px; padding-right: 10px; }
+  .tb-sm { appearance: none; border: 0; background: transparent; height: 36px; min-width: 28px; padding: 0 5px; border-radius: 5px; display: grid; place-items: center; cursor: pointer; color: #3a3648; font-size: 12px; transition: background .12s; }
+  .tb-sm:hover { background: rgba(0, 0, 0, .06); }
+  .tb-sys { display: flex; gap: 8px; padding: 0 8px; }
+  .tb-sys svg { width: 15px; height: 15px; }
+  .tb-clock { font-size: 11.5px; text-align: right; line-height: 1.3; color: #2a2636; padding: 0 6px; font-variant-numeric: tabular-nums; }
+  .tb-clock span { display: block; }
+
+  #traymenu {
+    position: absolute; right: 118px; bottom: calc(var(--taskbar-h) + 10px); z-index: 60; width: 210px; padding: 6px; border-radius: 9px;
+    background: rgba(249, 249, 251, .94); backdrop-filter: blur(24px);
+    box-shadow: 0 12px 34px rgba(20, 16, 40, .22), inset 0 0 0 1px rgba(0, 0, 0, .06);
+    transform-origin: bottom right; transform: scale(.94) translateY(6px); opacity: 0; visibility: hidden;
+    transition: transform .16s var(--ease), opacity .12s, visibility 0s linear .16s;
+  }
+  #traymenu.open { transform: none; opacity: 1; visibility: visible; transition-delay: 0s; }
+  #traymenu button { appearance: none; border: 0; background: transparent; width: 100%; height: 34px; border-radius: 5px; display: flex; align-items: center; gap: 10px; padding: 0 10px; cursor: pointer; font-size: 13px; color: #2a2636; }
+  #traymenu button:hover { background: rgba(0, 0, 0, .06); }
+  #traymenu svg { width: 15px; height: 15px; opacity: .8; }
+  #traymenu .chk { width: 15px; height: 15px; display: grid; place-items: center; }
+  #traymenu .chk svg { opacity: 0; }
+  #traymenu button.checked .chk svg { opacity: 1; }
+  #traymenu hr { border: 0; border-top: 1px solid rgba(0, 0, 0, .08); margin: 4px 6px; }
+
+  #toast {
+    position: absolute; right: 16px; bottom: calc(var(--taskbar-h) + 14px); z-index: 70;
+    background: #2B2636; color: #fff; font: 600 12.5px/1 var(--app); padding: 10px 14px; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .25); opacity: 0; transform: translateY(6px);
+    transition: opacity .18s, transform .18s var(--spring); pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+</style>
+
+<div id="app">
+  <header id="strip">
+    <div class="brand">
+      <span class="glyph" aria-hidden="true"></span>
+      <span class="name">Cute Sticky</span>
+      <span class="sub">interaction mockup</span>
+    </div>
+    <nav id="stages" aria-label="Stages"></nav>
+    <p id="caption"></p>
+  </header>
+
+  <div id="stage-wrap">
+    <div id="desktop">
+      <div class="wallpaper"></div>
+      <div class="bloom"></div>
+
+      <div id="layer-normal">
+        <div class="fakewin" id="fakewin">
+          <div class="fw-title">
+            <span class="doc"></span>
+            <span>plan.md — Editor</span>
+            <span class="ctl"><span>—</span><span>▢</span><span>✕</span></span>
+          </div>
+          <div class="fw-body">
+            <div class="fw-side">
+              <div>README.md</div>
+              <div class="cur">plan.md</div>
+              <div>ideas.md</div>
+              <div>journal.md</div>
+            </div>
+            <div class="fw-main">
+              <h3>This week</h3>
+              <p>Tab and card pile, then the note window.</p>
+              <p>Editor: bullets and checkboxes, nothing more.</p>
+              <p>Tray icon, start with Windows, single instance.</p>
+              <p>Polish pass: springs, stagger, shadows.<span class="cursor"></span></p>
+            </div>
+            <div class="fw-scroll"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="layer-top"></div>
+
+      <div id="dock">
+        <div id="fan"></div>
+        <div id="tab" title="Stickies"></div>
+      </div>
+
+      <div id="taskbar">
+        <div class="tb-center">
+          <button class="tb-btn" title="Start"><span class="start"><i></i><i></i><i></i><i></i></span></button>
+          <button class="tb-btn" title="Search"><svg viewBox="0 0 16 16" fill="none" stroke="#4a4658" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14" stroke-linecap="round"/></svg></button>
+          <button class="tb-btn" title="Task view"><span class="tv"></span></button>
+          <button class="tb-btn" title="File Explorer"><span class="folder"></span></button>
+          <button class="tb-btn" title="Browser"><span class="edge"></span></button>
+          <button class="tb-btn active" title="Editor"><span class="term">&gt;_</span></button>
+          <button id="launcher" class="tb-btn" title="Launch Cute Sticky" hidden><span class="glyph" aria-hidden="true"></span><span class="tip">Cute Sticky has quit. Click to launch it again.</span></button>
+        </div>
+        <div class="tb-right">
+          <button class="tb-sm" title="Hidden icons">︿</button>
+          <button id="trayicon" class="tb-sm" title="Cute Sticky"><span class="glyph sm" aria-hidden="true"></span></button>
+          <div class="tb-sys">
+            <svg viewBox="0 0 16 16" fill="none" stroke="#3a3648" stroke-width="1.5" stroke-linecap="round"><path d="M2 6.5a9 9 0 0 1 12 0M4.3 9a6 6 0 0 1 7.4 0M6.6 11.5a3 3 0 0 1 2.8 0"/><circle cx="8" cy="13.5" r=".8" fill="#3a3648"/></svg>
+            <svg viewBox="0 0 16 16" fill="none" stroke="#3a3648" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6h2.5L9 3v10L5 10H2.5z"/><path d="M11 6a3 3 0 0 1 0 4M12.8 4a5.5 5.5 0 0 1 0 8"/></svg>
+            <svg viewBox="0 0 16 16" fill="none" stroke="#3a3648" stroke-width="1.5"><rect x="1.5" y="4.5" width="11" height="7" rx="1.5"/><path d="M13 7v2" stroke-linecap="round"/><rect x="3" y="6" width="7" height="4" fill="#3a3648" stroke="none"/></svg>
+          </div>
+          <div class="tb-clock"><span id="clk-t">4:18 PM</span><span id="clk-d">03/09/2026</span></div>
+        </div>
+      </div>
+
+      <div id="traymenu" role="menu"></div>
+      <div id="toast" role="status"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  const desktop = $('#desktop'), layerNormal = $('#layer-normal'), layerTop = $('#layer-top');
+  const dock = $('#dock'), tab = $('#tab'), fan = $('#fan'), fakewin = $('#fakewin');
+  const trayIcon = $('#trayicon'), trayMenu = $('#traymenu'), launcher = $('#launcher'), toastEl = $('#toast');
+  const TAB_W = 22, TASKBAR_H = 48, CARD_W = 170, CARD_H = 110, GHOST_H = 34, GHOST_GAP = 6;
+
+  const SVG = {
+    pin: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M9.6 1.6l4.8 4.8-1.1 1.1-.6-.2-2.6 2.6.3 2.9-1 1L7 11.4l-3.6 3.6L2.9 14 6.5 10.4 4.1 8 5.2 7l2.9.3 2.6-2.6-.2-.6z"/></svg>',
+    trash: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M6 1.8h4l.6 1.2H14v1.4H2V3h3.4z"/><path d="M3.4 5.6h9.2l-.7 8a1.2 1.2 0 0 1-1.2 1.1H5.3a1.2 1.2 0 0 1-1.2-1.1z"/></svg>',
+    close: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+    plus: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>',
+    check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3 3 7-7"/></svg>',
+    eye: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>',
+    power: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 2v6"/><path d="M4.8 4.5a5 5 0 1 0 6.4 0"/></svg>',
+  };
+
+  const COLORS = [
+    { id: 'butter', hex: '#FFE9A8', name: 'Butter' },
+    { id: 'peach', hex: '#FFD3C2', name: 'Peach' },
+    { id: 'mint', hex: '#CFEFDD', name: 'Mint' },
+    { id: 'sky', hex: '#CDE6FA', name: 'Sky' },
+    { id: 'lilac', hex: '#E3D7F7', name: 'Lilac' },
+    { id: 'rose', hex: '#FBD5E3', name: 'Rose' },
+  ];
+  const colorHex = id => (COLORS.find(c => c.id === id) || COLORS[0]).hex;
+
+  // ---------- state ----------
+  let seq = 0;
+  const now = Date.now();
+  function parseLine(s) {
+    if (s.startsWith('[x] ')) return { t: 'check', x: s.slice(4), done: true };
+    if (s.startsWith('[ ] ')) return { t: 'check', x: s.slice(4), done: false };
+    if (s.startsWith('- ')) return { t: 'bullet', x: s.slice(2), done: false };
+    return { t: 'p', x: s, done: false };
+  }
+  function mk(color, lines, agoMs) {
+    return { id: 'n' + (++seq), color, blocks: lines.map(parseLine), open: false, pinned: true, x: null, y: null, w: 270, h: 230, updatedAt: now - agoMs, createdAt: now - agoMs - 60000 };
+  }
+  const state = {
+    notes: [
+      mk('rose', ['Mum’s birthday on the 14th', 'Book a table at Sorrel for 7'], 3 * 86400e3),
+      mk('sky', ['Sticky app ideas', '- dots on the tab, one per note', '- hover deals the pile out', '- pin toggle per note'], 26 * 3600e3),
+      mk('mint', ['Groceries', '[x] oat milk', '[ ] eggs', '[ ] limes', '[ ] coriander'], 2 * 3600e3),
+      mk('butter', ['Call the landlord about the kitchen tap', '- ask about the deposit', '[ ] send the photos'], 12 * 60e3),
+    ],
+    tabY: 0.36, tabHidden: false, running: true, autostart: true,
+    panelOpen: false, forcedOpen: false, trayOpen: false, cascade: 0, colorCursor: 4,
+  };
+  let zNormal = 2, zTop = 2;
+  const byId = id => state.notes.find(n => n.id === id);
+
+  // ---------- helpers ----------
+  const H = () => desktop.clientHeight, W = () => desktop.clientWidth;
+  let fanVisible = 0, fanTotal = 0;
+  function tabCenter() {
+    const above = Math.max(fanVisible / 2, tab.offsetHeight / 2 || 13);
+    const below = Math.max(fanTotal - fanVisible / 2, tab.offsetHeight / 2 || 13);
+    return clamp(state.tabY * H(), above + 8, H() - TASKBAR_H - below - 8);
+  }
+  function positionDock() {
+    const tabH = tab.offsetHeight || 26;
+    const mt = Math.max(0, (fanVisible - tabH) / 2);
+    tab.style.marginTop = mt + 'px';
+    dock.style.top = (tabCenter() - mt - tabH / 2) + 'px';
+  }
+  function fmtAgo(ts) {
+    const s = Math.max(0, (Date.now() - ts) / 1000);
+    if (s < 45) return 'just now';
+    const m = s / 60; if (m < 60) return Math.round(m) + ' min ago';
+    const h = m / 60; if (h < 24) return Math.round(h) + ' h ago';
+    const d = h / 24; if (d < 2) return 'yesterday';
+    return Math.round(d) + ' days ago';
+  }
+  function previewLines(n, count) {
+    return n.blocks.filter(b => b.x.trim()).slice(0, count)
+      .map(b => (b.t === 'bullet' ? '• ' : b.t === 'check' ? (b.done ? '☑ ' : '☐ ') : '') + b.x.trim());
+  }
+  function esc(s) { return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  let toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+  }
+  const rectIn = el => { const r = el.getBoundingClientRect(), d = desktop.getBoundingClientRect(); return { left: r.left - d.left, top: r.top - d.top, width: r.width, height: r.height }; };
+
+  // ---------- tab ----------
+  function renderTab() {
+    tab.innerHTML = '';
+    const ns = state.notes;
+    if (!ns.length) { const d = document.createElement('span'); d.className = 'dot empty'; tab.appendChild(d); }
+    ns.slice(0, 8).forEach(n => {
+      const d = document.createElement('button');
+      d.className = 'dot' + (n.open ? ' on' : ''); d.style.background = colorHex(n.color);
+      d.dataset.id = n.id; d.title = previewLines(n, 1)[0] || 'Empty note'; d.setAttribute('aria-label', d.title);
+      tab.appendChild(d);
+    });
+    if (ns.length > 8) { const m = document.createElement('span'); m.className = 'more'; m.textContent = '+' + (ns.length - 8); tab.appendChild(m); }
+    dock.classList.toggle('hidden', state.tabHidden || !state.running);
+    trayIcon.hidden = !state.running;
+    positionDock();
+  }
+
+  // ---------- card stack ----------
+  function fanStep(n) {
+    if (n < 2) return 38;
+    const room = H() - TASKBAR_H - 200 - CARD_H - GHOST_H;
+    return clamp(room / (n - 1), 22, 38);
+  }
+  function cardHTML(n, i) {
+    const ls = previewLines(n, 3);
+    const rot = (((i * 37) % 5) - 2) * 0.55;
+    return `<div class="fc${n.open ? ' is-open' : ''}" role="button" tabindex="0" data-id="${n.id}"
+        style="--t:${i * cardStep}px;--z:${i + 1};--rot:${rot.toFixed(2)}deg;background-color:${colorHex(n.color)}">
+      <div class="fc-top"><span class="fc-l1${ls[0] ? '' : ' mute'}">${esc(ls[0] || 'Empty note')}</span><span class="openmark">open</span></div>
+      <div class="fc-ln">${esc(ls[1] || '')}</div>
+      <div class="fc-ln">${esc(ls[2] || '')}</div>
+      <div class="fc-foot"><span class="ago">${fmtAgo(n.updatedAt)}</span></div>
+      <button class="ic trash del" title="Delete" aria-label="Delete note">${SVG.trash}</button>
+    </div>`;
+  }
+  let cardStep = 38;
+  function renderFan() {
+    const ns = state.notes, count = ns.length;
+    cardStep = fanStep(count);
+    const push = CARD_H - cardStep + GHOST_GAP;
+    const ghostTop = count ? (count - 1) * cardStep + CARD_H + GHOST_GAP : 0;
+    fanVisible = ghostTop + GHOST_H;
+    fanTotal = fanVisible + (count ? push : 0);
+    fan.style.height = fanTotal + 'px';
+    fan.style.setProperty('--push', push + 'px');
+    fan.style.setProperty('--t0', (fanVisible / 2 - CARD_H / 2) + 'px');
+    fan.innerHTML = ns.map((n, i) => cardHTML(n, i)).join('') +
+      `<button class="ghost" title="New note" aria-label="New note" style="--t:${ghostTop}px">${SVG.plus}<span>New note</span></button>`;
+  }
+  function refreshCard(n) {
+    const c = fan.querySelector(`.fc[data-id="${n.id}"]`);
+    if (!c) { if (state.panelOpen) renderFan(); return; }
+    const ls = previewLines(n, 3);
+    const l1 = c.querySelector('.fc-l1'); l1.textContent = ls[0] || 'Empty note'; l1.classList.toggle('mute', !ls[0]);
+    const lns = c.querySelectorAll('.fc-ln'); lns[0].textContent = ls[1] || ''; lns[1].textContent = ls[2] || '';
+    c.querySelector('.ago').textContent = fmtAgo(n.updatedAt);
+    c.style.backgroundColor = colorHex(n.color);
+    c.classList.toggle('is-open', n.open);
+  }
+  let hoverTimer, closeTimer, dealTimer;
+  function openPanel() {
+    if (!state.running || state.tabHidden) return;
+    clearTimeout(closeTimer);
+    if (state.panelOpen) return;
+    state.panelOpen = true;
+    renderFan(); positionDock();
+    fan.classList.add('stack');
+    dock.classList.add('open');
+    const cards = $$('.fc', fan), count = cards.length;
+    cards.forEach((c, i) => { c.style.transitionDelay = (i * 20) + 'ms'; });
+    const g = fan.querySelector('.ghost'); if (g) g.style.transitionDelay = (count * 20) + 'ms';
+    void fan.offsetWidth;
+    fan.classList.remove('stack');
+    clearTimeout(dealTimer);
+    dealTimer = setTimeout(() => { cards.forEach(c => { c.style.transitionDelay = ''; }); if (g) g.style.transitionDelay = ''; }, 360 + count * 20);
+  }
+  function closePanel(force) {
+    if (state.forcedOpen && !force) return;
+    if (!state.panelOpen) return;
+    state.panelOpen = false;
+    clearTimeout(dealTimer);
+    $$('.fc, .ghost', fan).forEach(c => { c.style.transitionDelay = ''; });
+    fan.classList.add('stack');
+    dock.classList.remove('open');
+    disarmAll();
+  }
+  tab.addEventListener('mouseenter', () => { clearTimeout(hoverTimer); hoverTimer = setTimeout(openPanel, 150); });
+  tab.addEventListener('mouseleave', () => { if (!state.panelOpen) clearTimeout(hoverTimer); });
+  dock.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+  dock.addEventListener('mouseleave', () => { clearTimeout(closeTimer); closeTimer = setTimeout(() => closePanel(false), 250); });
+
+  tab.addEventListener('pointerdown', ev => {
+    ev.preventDefault();
+    const dotBtn = ev.target.closest('.dot');
+    const sy = ev.clientY, startC = tabCenter(); let moved = false;
+    const move = m => {
+      const dy = m.clientY - sy;
+      if (!moved && Math.abs(dy) > 4) { moved = true; state.forcedOpen = false; closePanel(true); clearTimeout(hoverTimer); dock.classList.add('dragging'); }
+      if (moved) { state.tabY = clamp(startC + dy, 30, H() - TASKBAR_H - 30) / H(); positionDock(); }
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up);
+      dock.classList.remove('dragging');
+      if (!moved) {
+        if (dotBtn && dotBtn.dataset.id) { state.forcedOpen = false; closePanel(true); openNote(byId(dotBtn.dataset.id), { from: rectIn(dotBtn), focus: 'end' }); }
+        else { clearTimeout(hoverTimer); openPanel(); }
+      }
+    };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  });
+
+  fan.addEventListener('click', ev => {
+    if (ev.target.closest('.ghost')) { state.forcedOpen = false; closePanel(true); createNote(); return; }
+    const del = ev.target.closest('.del');
+    if (del) { ev.stopPropagation(); armDelete(del, byId(del.closest('.fc').dataset.id)); return; }
+    const card = ev.target.closest('.fc');
+    if (card) { const n = byId(card.dataset.id); const from = rectIn(card); state.forcedOpen = false; closePanel(true); openNote(n, { from, focus: 'end' }); }
+  });
+  fan.addEventListener('keydown', ev => {
+    const card = ev.target.closest('.fc');
+    if (card && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); const n = byId(card.dataset.id); const from = rectIn(card); closePanel(true); openNote(n, { from, focus: 'end' }); }
+  });
+
+  // ---------- notes ----------
+  const noteEl = n => desktop.querySelector(`.note[data-id="${n.id}"]`);
+  function place(n) {
+    const k = state.cascade++ % 6;
+    n.x = clamp(W() - TAB_W - 48 - n.w - k * 26, 12, W() - n.w - 12);
+    n.y = clamp(tabCenter() - 70 + k * 26, 12, H() - TASKBAR_H - n.h - 12);
+  }
+  function bringToFront(e, n) { e.style.zIndex = n.pinned ? ++zTop : ++zNormal; }
+  function buildNote(n) {
+    const e = document.createElement('div');
+    e.className = 'note'; e.dataset.id = n.id;
+    e.style.cssText = `left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px;`;
+    e.style.setProperty('--paper', colorHex(n.color));
+    e.innerHTML = `
+      <div class="nh">
+        <button class="sw" title="Colour" aria-label="Change colour"></button>
+        <div class="grip"></div>
+        <div class="acts">
+          <button class="ic pin${n.pinned ? ' on' : ''}" title="${n.pinned ? 'Pinned on top' : 'Pin on top'}">${SVG.pin}</button>
+          <button class="ic trash" title="Delete">${SVG.trash}</button>
+          <button class="ic close" title="Close">${SVG.close}</button>
+        </div>
+      </div>
+      <div class="nb"></div>
+      <div class="rs" title="Resize"></div>
+      <div class="sws">${COLORS.map(c => `<button class="swo${c.id === n.color ? ' on' : ''}" data-c="${c.id}" style="background:${c.hex}" title="${c.name}"></button>`).join('')}</div>`;
+    renderBlocks(e, n);
+    return e;
+  }
+  function spawn(n, opts = {}) {
+    const e = buildNote(n);
+    (n.pinned ? layerTop : layerNormal).appendChild(e);
+    bringToFront(e, n);
+    if (opts.from) {
+      const f = opts.from;
+      e.style.transformOrigin = 'top left';
+      e.style.transition = 'none';
+      e.style.transform = `translate(${f.left - n.x}px, ${f.top - n.y}px) scale(${f.width / n.w}, ${f.height / n.h})`;
+      e.style.opacity = '.55';
+      void e.offsetWidth;
+      e.style.transition = 'transform .36s var(--spring), opacity .22s ease';
+      e.style.transform = 'none'; e.style.opacity = '1';
+      setTimeout(() => { e.style.transition = ''; e.style.transform = ''; e.style.transformOrigin = ''; e.style.opacity = ''; }, 400);
+    } else {
+      e.classList.add('opening');
+      e.addEventListener('animationend', () => e.classList.remove('opening'), { once: true });
+    }
+    if (opts.focus) focusBlock(e, opts.focus === 'start' ? 0 : n.blocks.length - 1, opts.focus === 'start' ? 0 : 'end');
+    return e;
+  }
+  function openNote(n, opts = {}) {
+    if (!n || !state.running) return;
+    if (n.open) {
+      const e = noteEl(n);
+      if (e) { bringToFront(e, n); if (opts.focus) focusBlock(e, n.blocks.length - 1, 'end'); }
+      return;
+    }
+    n.open = true;
+    if (n.x == null) place(n);
+    spawn(n, opts);
+    renderTab(); if (state.panelOpen) refreshCard(n);
+  }
+  function closeNote(n, instant) {
+    n.open = false;
+    const e = noteEl(n);
+    if (e) {
+      if (instant) e.remove();
+      else { e.classList.add('closing'); e.addEventListener('animationend', () => e.remove(), { once: true }); }
+    }
+    renderTab(); if (state.panelOpen) refreshCard(n);
+  }
+  function createNote() {
+    const color = COLORS[state.colorCursor++ % COLORS.length].id;
+    const n = { id: 'n' + (++seq), color, blocks: [{ t: 'p', x: '', done: false }], open: false, pinned: true, x: null, y: null, w: 270, h: 230, updatedAt: Date.now(), createdAt: Date.now() };
+    state.notes.push(n);
+    if (state.panelOpen) renderFan();
+    openNote(n, { focus: 'start' });
+    return n;
+  }
+  function deleteNote(n) {
+    const i = state.notes.indexOf(n); if (i < 0) return;
+    state.notes.splice(i, 1);
+    closeNote(n);
+    const c = fan.querySelector(`.fc[data-id="${n.id}"]`);
+    if (c) { c.style.opacity = '0'; c.style.transform = 'translateY(-30px) scale(.8)'; setTimeout(() => { if (state.panelOpen) renderFan(); }, 200); }
+    renderTab();
+  }
+  let armTimer;
+  function disarmAll() { $$('.armed').forEach(b => b.classList.remove('armed')); clearTimeout(armTimer); }
+  function armDelete(btn, n) {
+    if (btn.classList.contains('armed')) { disarmAll(); deleteNote(n); return; }
+    disarmAll(); btn.classList.add('armed');
+    armTimer = setTimeout(disarmAll, 3000);
+  }
+  function setPinned(n, pinned) {
+    n.pinned = pinned;
+    const e = noteEl(n); if (!e) return;
+    (pinned ? layerTop : layerNormal).appendChild(e);
+    bringToFront(e, n);
+    const b = e.querySelector('.pin'); b.classList.toggle('on', pinned); b.title = pinned ? 'Pinned on top' : 'Pin on top';
+  }
+  function setColor(n, id) {
+    n.color = id; const e = noteEl(n);
+    if (e) { e.style.setProperty('--paper', colorHex(id)); $$('.swo', e).forEach(s => s.classList.toggle('on', s.dataset.c === id)); }
+    save(n); renderTab();
+  }
+
+  // ---------- editor ----------
+  function blockEl(b, i) {
+    const r = document.createElement('div');
+    r.className = 'blk ' + b.t + (b.done ? ' done' : ''); r.dataset.i = i;
+    r.innerHTML = (b.t === 'check' ? `<button class="mk cb" tabindex="-1" aria-label="Toggle done">${SVG.check}</button>` : '<span class="mk"></span>') +
+      '<div class="tx" contenteditable="plaintext-only" spellcheck="false"></div>';
+    r.querySelector('.tx').textContent = b.x;
+    return r;
+  }
+  function renderBlocks(e, n) {
+    const nb = e.querySelector('.nb'); nb.innerHTML = '';
+    n.blocks.forEach((b, i) => nb.appendChild(blockEl(b, i)));
+  }
+  function caretOffset(tx) {
+    const s = getSelection(); if (!s.rangeCount) return 0;
+    const r = s.getRangeAt(0).cloneRange(); r.selectNodeContents(tx); r.setEnd(s.getRangeAt(0).endContainer, s.getRangeAt(0).endOffset);
+    return r.toString().length;
+  }
+  function setCaret(tx, off) {
+    tx.focus();
+    const s = getSelection(), r = document.createRange();
+    const node = tx.firstChild;
+    if (!node) r.setStart(tx, 0); else r.setStart(node, clamp(off, 0, node.textContent.length));
+    r.collapse(true); s.removeAllRanges(); s.addRange(r);
+  }
+  function focusBlock(e, i, pos) {
+    const txs = $$('.tx', e); const tx = txs[clamp(i, 0, txs.length - 1)]; if (!tx) return;
+    setCaret(tx, pos === 'end' ? tx.textContent.length : pos);
+  }
+  function ctx(tx) {
+    const e = tx.closest('.note'), n = byId(e.dataset.id), i = +tx.closest('.blk').dataset.i;
+    return { e, n, i, b: n.blocks[i] };
+  }
+  const saveTimers = {};
+  function save(n) {
+    n.updatedAt = Date.now();
+    clearTimeout(saveTimers[n.id]);
+    saveTimers[n.id] = setTimeout(() => {
+      if (state.panelOpen) refreshCard(n);
+      const d = tab.querySelector(`.dot[data-id="${n.id}"]`); if (d) d.title = previewLines(n, 1)[0] || 'Empty note';
+    }, 200);
+  }
+  function isSingleLine(tx) { const lh = parseFloat(getComputedStyle(tx).lineHeight) || 22; return tx.scrollHeight < lh * 1.6; }
+  desktop.addEventListener('keydown', ev => {
+    const tx = ev.target.closest && ev.target.closest('.tx'); if (!tx) return;
+    const { e, n, i, b } = ctx(tx);
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      const off = caretOffset(tx), text = tx.textContent;
+      if (b.t !== 'p' && text.trim() === '') { b.t = 'p'; b.done = false; renderBlocks(e, n); focusBlock(e, i, 0); save(n); return; }
+      b.x = text.slice(0, off);
+      n.blocks.splice(i + 1, 0, { t: b.t, x: text.slice(off), done: false });
+      renderBlocks(e, n); focusBlock(e, i + 1, 0); save(n); return;
+    }
+    if (ev.key === 'Backspace') {
+      const off = caretOffset(tx);
+      if (off === 0 && getSelection().isCollapsed) {
+        ev.preventDefault();
+        if (b.t !== 'p') { b.t = 'p'; b.done = false; renderBlocks(e, n); focusBlock(e, i, 0); }
+        else if (i > 0) { const p = n.blocks[i - 1]; const j = p.x.length; p.x += tx.textContent; n.blocks.splice(i, 1); renderBlocks(e, n); focusBlock(e, i - 1, j); }
+        save(n); return;
+      }
+    }
+    if (ev.key === 'ArrowUp' && i > 0 && (isSingleLine(tx) || caretOffset(tx) === 0)) { ev.preventDefault(); focusBlock(e, i - 1, Math.min(caretOffset(tx), n.blocks[i - 1].x.length)); return; }
+    if (ev.key === 'ArrowDown' && i < n.blocks.length - 1 && (isSingleLine(tx) || caretOffset(tx) === tx.textContent.length)) { ev.preventDefault(); focusBlock(e, i + 1, Math.min(caretOffset(tx), n.blocks[i + 1].x.length)); return; }
+    if (ev.key === 'Escape') tx.blur();
+  });
+  desktop.addEventListener('input', ev => {
+    const tx = ev.target.closest && ev.target.closest('.tx'); if (!tx) return;
+    const { e, n, i, b } = ctx(tx);
+    let text = tx.textContent, convert = false, m;
+    if (b.t === 'p' && (m = /^(- |\* |• )/.exec(text))) { b.t = 'bullet'; text = text.slice(m[0].length); convert = true; }
+    else if (b.t !== 'check' && (m = /^\[( |x|X)?\] /.exec(text))) { b.t = 'check'; b.done = /x/i.test(m[1] || ''); text = text.slice(m[0].length); convert = true; }
+    b.x = text;
+    if (convert) { renderBlocks(e, n); focusBlock(e, i, 0); }
+    save(n);
+  });
+
+  // ---------- note pointer interactions ----------
+  desktop.addEventListener('pointerdown', ev => {
+    const note = ev.target.closest('.note');
+    if (!ev.target.closest('#dock')) { state.forcedOpen = false; closePanel(true); clearTimeout(hoverTimer); }
+    if (!ev.target.closest('#traymenu, #trayicon')) closeTray();
+    if (!ev.target.closest('.sws, .sw')) $$('.sws.open').forEach(s => s.classList.remove('open'));
+    if (!ev.target.closest('.armed')) disarmAll();
+    if (ev.target.closest('#fakewin')) { fakewin.style.zIndex = ++zNormal; return; }
+    if (!note) return;
+    const n = byId(note.dataset.id); bringToFront(note, n);
+    if (ev.target.closest('.rs')) { startResize(ev, note, n); return; }
+    if (ev.target.closest('.nh') && !ev.target.closest('button')) startDrag(ev, note, n);
+  });
+  function startDrag(ev, e, n) {
+    ev.preventDefault();
+    const sx = ev.clientX, sy = ev.clientY, ox = n.x, oy = n.y;
+    e.classList.add('dragging');
+    const move = m => {
+      n.x = clamp(ox + m.clientX - sx, -n.w + 60, W() - 60);
+      n.y = clamp(oy + m.clientY - sy, 0, H() - TASKBAR_H - 34);
+      e.style.left = n.x + 'px'; e.style.top = n.y + 'px';
+    };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); e.classList.remove('dragging'); };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  }
+  function startResize(ev, e, n) {
+    ev.preventDefault();
+    const sx = ev.clientX, sy = ev.clientY, ow = n.w, oh = n.h;
+    const move = m => {
+      n.w = clamp(ow + m.clientX - sx, 200, 520); n.h = clamp(oh + m.clientY - sy, 150, 600);
+      e.style.width = n.w + 'px'; e.style.height = n.h + 'px';
+    };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  }
+  desktop.addEventListener('click', ev => {
+    const note = ev.target.closest('.note'); if (!note) return;
+    const n = byId(note.dataset.id);
+    if (ev.target.closest('.sw')) { note.querySelector('.sws').classList.toggle('open'); return; }
+    const swo = ev.target.closest('.swo');
+    if (swo) { setColor(n, swo.dataset.c); note.querySelector('.sws').classList.remove('open'); return; }
+    if (ev.target.closest('.pin')) { setPinned(n, !n.pinned); return; }
+    if (ev.target.closest('.close')) { closeNote(n); return; }
+    const tr = ev.target.closest('.trash');
+    if (tr) { armDelete(tr, n); return; }
+    const cb = ev.target.closest('.cb');
+    if (cb) { const row = cb.closest('.blk'); const b = n.blocks[+row.dataset.i]; b.done = !b.done; row.classList.toggle('done', b.done); save(n); return; }
+    if (ev.target.closest('.nb') && !ev.target.closest('.tx')) focusBlock(note, n.blocks.length - 1, 'end');
+  });
+
+  // ---------- tray ----------
+  function renderTray() {
+    trayMenu.innerHTML = `
+      <button data-act="new">${SVG.plus}<span>New note</span></button>
+      <button data-act="tab">${SVG.eye}<span>${state.tabHidden ? 'Show tab' : 'Hide tab'}</span></button>
+      <button data-act="auto" class="${state.autostart ? 'checked' : ''}"><span class="chk">${SVG.check}</span><span>Start with Windows</span></button>
+      <hr>
+      <button data-act="quit">${SVG.power}<span>Quit</span></button>`;
+  }
+  function openTray() { renderTray(); state.trayOpen = true; trayMenu.classList.add('open'); }
+  function closeTray() { state.trayOpen = false; trayMenu.classList.remove('open'); }
+  trayIcon.addEventListener('click', ev => { ev.stopPropagation(); state.trayOpen ? closeTray() : openTray(); });
+  trayMenu.addEventListener('click', ev => {
+    const b = ev.target.closest('button'); if (!b) return;
+    const act = b.dataset.act; closeTray();
+    if (act === 'new') createNote();
+    if (act === 'tab') { state.tabHidden = !state.tabHidden; if (state.tabHidden) closePanel(true); renderTab(); toast(state.tabHidden ? 'Tab hidden. Show it again from the tray.' : 'Tab is back on the right edge.'); }
+    if (act === 'auto') { state.autostart = !state.autostart; toast(state.autostart ? 'Cute Sticky will start with Windows.' : 'Cute Sticky won’t start with Windows.'); }
+    if (act === 'quit') quit();
+  });
+  function quit() {
+    state.running = false; state.forcedOpen = false; closePanel(true);
+    $$('.note').forEach(e => { e.classList.add('closing'); e.addEventListener('animationend', () => e.remove(), { once: true }); });
+    renderTab(); launcher.hidden = false;
+  }
+  function relaunch(instant) {
+    if (state.running) return;
+    state.running = true; launcher.hidden = true; renderTab();
+    const go = () => state.notes.filter(n => n.open).forEach(n => spawn(n));
+    instant ? go() : setTimeout(go, 320);
+  }
+  launcher.addEventListener('click', () => relaunch(false));
+
+  // ---------- stages ----------
+  function resetAll() {
+    if (!state.running) { state.running = true; launcher.hidden = true; }
+    state.forcedOpen = false; closePanel(true); closeTray(); disarmAll();
+    state.notes.forEach(n => { n.open = false; });
+    $$('.note').forEach(e => e.remove());
+    state.cascade = 0;
+    renderTab();
+  }
+  const newest = () => state.notes[state.notes.length - 1];
+  const STAGES = [
+    { label: 'Resting', cap: 'A slim vertical tab hugs the right edge, one dot per note, newest at the bottom. It stays on top of every window and never shows in the taskbar. That is all you see until you want a note.',
+      run() { resetAll(); } },
+    { label: 'Hover', cap: 'Rest the pointer on the tab for 150 ms and the notes deal out beside it in a pile, each showing its first line. Hover one and it slides out to peek while the cards below make room. Move away and they fold back after a 250 ms grace.',
+      run() { resetAll(); state.forcedOpen = true; openPanel(); } },
+    { label: 'Open a note', cap: 'Click a card, or a dot on the tab, and the note grows out of it into its own floating window. Drag it by the top edge, resize from the corner. It remembers where you leave it.',
+      run() {
+        resetAll(); state.forcedOpen = true; openPanel();
+        const n = newest();
+        setTimeout(() => { const c = fan.querySelector(`.fc[data-id="${n.id}"]`); if (c) c.classList.add('peek'); }, 500);
+        setTimeout(() => { const c = fan.querySelector(`.fc[data-id="${n.id}"]`); if (!c) return; const from = rectIn(c); state.forcedOpen = false; closePanel(true); openNote(n, { from }); }, 1100);
+      } },
+    { label: 'Write', cap: 'Type <kbd>- </kbd> for a bullet and <kbd>[] </kbd> for a checkbox. Enter continues the list, Backspace on an empty item leaves it. Everything saves as you type. Try it in this note.',
+      run() { resetAll(); openNote(state.notes[2] || newest(), { focus: 'end' }); } },
+    { label: 'New note', cap: 'The dashed card at the bottom of the pile, or the tray menu, makes a note in the next pastel colour, cascaded beside the last one, with the cursor already inside.',
+      run() { resetAll(); createNote(); } },
+    { label: 'Delete', cap: 'Hover a card and a trash icon appears in its top corner. Click it and it turns into <strong>Delete?</strong>, click again within three seconds to confirm. Wait and it calms back down. The same icon lives in every open note. No dialogs.',
+      run() { resetAll(); state.forcedOpen = true; openPanel(); const n = newest(); setTimeout(() => { const c = fan.querySelector(`.fc[data-id="${n.id}"]`); if (!c) return; c.classList.add('peek'); armDelete(c.querySelector('.del'), n); }, 450); } },
+    { label: 'Pin', cap: 'Every note starts pinned on top. Unpin it and it behaves like a normal window: click the editor behind it and the note drops back. Pin it again and it floats over everything.',
+      run() {
+        resetAll(); const n = state.notes[1] || newest(); if (!n) return;
+        n.pinned = false; const fw = rectIn(fakewin);
+        n.x = Math.round(fw.left + fw.width - 130); n.y = Math.round(fw.top + 120);
+        openNote(n); setTimeout(() => { fakewin.style.zIndex = ++zNormal; }, 900);
+      } },
+    { label: 'Tray', cap: 'The tray icon holds the rest: new note, hide or show the tab, start with Windows, and quit. Nothing else needs a settings screen.',
+      run() { resetAll(); openTray(); } },
+    { label: 'Move the tab', cap: 'Drag the tab up or down the edge to park it where it suits you. The spot is remembered. Try dragging it yourself.',
+      run() { resetAll(); dock.style.transition = 'top .5s var(--spring)'; state.tabY = state.tabY > 0.5 ? 0.36 : 0.66; positionDock(); setTimeout(() => { dock.style.transition = ''; }, 600); } },
+    { label: 'Relaunch', cap: 'Quit from the tray and start it again: the tab and every note that was open come back exactly where they were.',
+      run() { resetAll(); openNote(state.notes[3] || newest()); openNote(state.notes[2] || newest()); setTimeout(quit, 900); setTimeout(() => relaunch(false), 2000); } },
+  ];
+  const FREE = { label: 'Free play', cap: 'Everything here is live. Hover the tab, peek at the pile, click a card to open it, drag notes, resize from the corner, type, change colours, try the tray. Nothing is saved between reloads.' };
+  const stagesEl = $('#stages'), captionEl = $('#caption');
+  STAGES.forEach((s, i) => {
+    const b = document.createElement('button'); b.className = 'chip'; b.innerHTML = `<b>${i + 1}</b>${s.label}`;
+    b.addEventListener('click', () => { setActive(b); captionEl.innerHTML = s.cap; s.run(); });
+    stagesEl.appendChild(b);
+  });
+  const freeBtn = document.createElement('button'); freeBtn.className = 'chip free'; freeBtn.textContent = FREE.label;
+  freeBtn.addEventListener('click', () => { setActive(freeBtn); captionEl.innerHTML = FREE.cap; });
+  stagesEl.appendChild(freeBtn);
+  function setActive(b) { $$('.chip', stagesEl).forEach(c => c.classList.toggle('on', c === b)); }
+
+  // ---------- clock ----------
+  function tick() {
+    const d = new Date();
+    $('#clk-t').textContent = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    $('#clk-d').textContent = d.toLocaleDateString();
+  }
+  tick(); setInterval(tick, 15000);
+
+  // ---------- boot ----------
+  window.addEventListener('resize', positionDock);
+  positionDock(); renderTab(); renderTray();
+  setActive(freeBtn); captionEl.innerHTML = FREE.cap;
+})();
+</script>

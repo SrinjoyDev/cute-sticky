@@ -12,8 +12,8 @@
 
 ## Global Constraints
 
-- Windows 11 is the only target. Build and run on the Windows side; the tree lives at `C:\Users\Abcom\cute-sticky` (symlinked from `~/cute-sticky` in WSL).
-- Every Node and Cargo command runs through Windows interop from WSL: `cmd.exe /c "cd /d C:\Users\Abcom\cute-sticky && <command>"`.
+- Windows 11 is the only target. Build and run on the Windows side; the tree lives at `C:\Users\<you>\cute-sticky` (symlinked from `~/cute-sticky` in WSL).
+- Every Node and Cargo command runs through Windows interop from WSL: `cmd.exe /c "cd /d C:\Users\<you>\cute-sticky && <command>"`.
 - No frontend framework. No runtime dependencies beyond `@tauri-apps/api`.
 - Rust release profile: `opt-level = "s"`, `lto = true`, `codegen-units = 1`, `panic = "abort"`, `strip = true`.
 - Identifier `com.srinjoy.cutesticky`; product name `Cute Sticky`; version `0.1.0`; MIT licence.
